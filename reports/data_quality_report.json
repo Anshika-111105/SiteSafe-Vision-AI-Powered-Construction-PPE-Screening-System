@@ -1,0 +1,18 @@
+{
+  "timestamp_utc": "2026-09-12T07:08:59.766869+00:00",
+  "quality_gate_passed": true,
+  "total_candidates_processed": 185,
+  "total_valid_crops": 185,
+  "class_distribution": {
+    "FULL_PPE": 65,
+    "NO_PPE": 50,
+    "PARTIAL_PPE": 70
+  },
+  "imbalance_ratio": 1.4,
+  "corrupt_images": 0,
+  "blank_images": 0,
+  "extreme_aspect_ratios": 0,
+  "invalid_dimensions": 0,
+  "duplicate_sha256_count": 0,
+  "issues_detected": []
+}

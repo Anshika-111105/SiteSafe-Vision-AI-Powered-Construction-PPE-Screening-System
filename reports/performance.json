@@ -1,0 +1,55 @@
+{
+  "timestamp_utc": "2026-09-12T07:19:03.859476+00:00",
+  "hardware": {
+    "device": "CPU",
+    "threads": 4
+  },
+  "architectures": {
+    "resnet50": {
+      "model_name": "resnet50",
+      "model_file_size_mb": 90.0,
+      "total_parameters": 23514179,
+      "trainable_parameters": 23514179,
+      "load_time_ms": 544.22,
+      "single_image_latency_ms": {
+        "mean": 105.0,
+        "median": 99.94,
+        "p95": 141.1,
+        "p99": 157.46,
+        "min": 83.52,
+        "max": 164.77
+      },
+      "throughput_images_per_second": {
+        "batch_size_1": 11.39,
+        "batch_size_4": 11.51,
+        "batch_size_8": 10.12,
+        "batch_size_16": 9.44
+      }
+    },
+    "mobilenet_v3_large": {
+      "model_name": "mobilenet_v3_large",
+      "model_file_size_mb": 16.24,
+      "total_parameters": 4205875,
+      "trainable_parameters": 4205875,
+      "load_time_ms": 171.21,
+      "single_image_latency_ms": {
+        "mean": 21.84,
+        "median": 20.93,
+        "p95": 29.08,
+        "p99": 30.53,
+        "min": 16.14,
+        "max": 30.58
+      },
+      "throughput_images_per_second": {
+        "batch_size_1": 50.34,
+        "batch_size_4": 56.07,
+        "batch_size_8": 49.08,
+        "batch_size_16": 34.89
+      }
+    }
+  },
+  "comparison_summary": {
+    "latency_speedup_mobilenet_vs_resnet": 4.81,
+    "model_size_reduction_ratio": 5.54
+  }
+}

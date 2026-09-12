@@ -1,0 +1,37 @@
+{
+  "timestamp_utc": "2026-09-12T07:09:03.207605+00:00",
+  "leakage_gate_passed": true,
+  "grouping_strategy": "group_by_source_image_id",
+  "random_seed": 42,
+  "total_source_scenes": 120,
+  "split_scenes_count": {
+    "train": 84,
+    "val": 18,
+    "test": 18
+  },
+  "total_worker_samples": 185,
+  "split_samples_count": {
+    "train": 134,
+    "val": 24,
+    "test": 27
+  },
+  "split_class_distribution": {
+    "train": {
+      "NO_PPE": 35,
+      "PARTIAL_PPE": 49,
+      "FULL_PPE": 50
+    },
+    "val": {
+      "FULL_PPE": 7,
+      "NO_PPE": 8,
+      "PARTIAL_PPE": 9
+    },
+    "test": {
+      "FULL_PPE": 8,
+      "PARTIAL_PPE": 12,
+      "NO_PPE": 7
+    }
+  },
+  "leakage_violations": [],
+  "near_duplicate_crossings_count": 89
+}

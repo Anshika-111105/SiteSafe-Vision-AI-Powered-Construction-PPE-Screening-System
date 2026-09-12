@@ -1,0 +1,44 @@
+{
+  "timestamp_utc": "2026-09-12T07:21:32.628664+00:00",
+  "overall_reproducibility_passed": true,
+  "checks": {
+    "git": {
+      "status": "PASSED",
+      "commit": "INITIAL_UNCOMMITTED_STATE",
+      "workspace_state": "DIRTY_OR_MODIFIED"
+    },
+    "dvc": {
+      "status": "PASSED",
+      "dvc_yaml_sha256": "11dbd9fe0e0117e9960386f1bdedb18f24d75c3e7b90a6e67c0cffc85ddd6205",
+      "dvc_lock_sha256": "ce93cd69856fbbf3fecae23c317d05417260151527947b1effecb6dee5497adb"
+    },
+    "configuration": {
+      "status": "PASSED",
+      "config_hash": "ce4c8332d99f53778b9b1272cc73e894d6fe5ee60cc2de29696c0f4b22e1f324",
+      "model_selection_hash": "97293e2a77035f605e8dc09a91c037be4d625ddb3edb54599b2298621a52be13"
+    },
+    "dataset_manifests": {
+      "status": "PASSED",
+      "split_manifest_sha256": "6dc261a06f9e689786e5638f235aeeaa28f91baf26ba89e14427f9646b00b1cb",
+      "data_manifest_sha256": "03cea7ee822692d16b9f640bdc9ee0403735c3476a2bda3924837ee894c4bad0"
+    },
+    "model_artifacts": {
+      "status": "PASSED",
+      "production_model_sha256": "892745cf3a07e5f7222c89c41860386b9ac9577ce80edd1a388989898abc55d1",
+      "model_metadata_sha256": "37bb2e029992692d24e67544131d365aa07935b03dc59727dd70913a2f968460"
+    },
+    "checksum_verification": {
+      "status": "PASSED"
+    }
+  },
+  "reproducibility_boundary": {
+    "deterministic_algorithms_configured": true,
+    "fixed_seeds": [
+      "python=42",
+      "numpy=42",
+      "torch=42",
+      "dataloader_workers=0"
+    ],
+    "hardware_boundary_note": "Exact bit-for-bit floating-point parity across different CPU microarchitectures or differing GPU architectures (CUDA SM compute versions) is constrained by IEEE 754 atomic reductions and SIMD vector dispatch. Exact manifest and metric reproducibility is guaranteed within identical Python 3.11.x, PyTorch 2.13.0 environments on x86_64."
+  }
+}

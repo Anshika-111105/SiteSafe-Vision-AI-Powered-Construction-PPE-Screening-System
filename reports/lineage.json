@@ -1,0 +1,27 @@
+{
+  "timestamp_utc": "2026-09-12T07:21:32.375880+00:00",
+  "model_version": "1.0.0",
+  "system_name": "SiteSafe Vision",
+  "git_commit": "UNKNOWN_OR_UNCOMMITTED",
+  "dvc_lock_sha256": "ce93cd69856fbbf3fecae23c317d05417260151527947b1effecb6dee5497adb",
+  "dataset_version": "1.0.0",
+  "raw_dataset_source": "Roboflow Universe Construction PPE Detection (CC BY 4.0)",
+  "config_sha256": "ce4c8332d99f53778b9b1272cc73e894d6fe5ee60cc2de29696c0f4b22e1f324",
+  "model_selection_config_sha256": "97293e2a77035f605e8dc09a91c037be4d625ddb3edb54599b2298621a52be13",
+  "split_manifest_sha256": "6dc261a06f9e689786e5638f235aeeaa28f91baf26ba89e14427f9646b00b1cb",
+  "environment_hash": "7e0d50f848dcbfce619c18d92af8862b6d669c888065ef6aeb2e582f2f5dc5a9",
+  "production_model_sha256": "892745cf3a07e5f7222c89c41860386b9ac9577ce80edd1a388989898abc55d1",
+  "champion_model_architecture": "MobileNetV3-Large (torchvision.models.mobilenet_v3_large)",
+  "lineage_trace": [
+    "SOURCE_DATASET (Roboflow CC BY 4.0)",
+    "RAW_INGESTION (data/raw/dataset_metadata.json)",
+    "LABEL_DERIVATION (src/data/build_classification_dataset.py -> data/interim/label_audit.csv)",
+    "QUALITY_GATE (src/data/quality_audit.py -> reports/data_quality_report.json)",
+    "LEAKAGE_PREVENTION & GROUPED_SPLIT (src/data/leakage_audit.py -> data/processed/split_manifest.csv)",
+    "TRANSFER_LEARNING_TRAINING (src/models/train.py -> artifacts/models/best_*.pt)",
+    "VALIDATION_MODEL_SELECTION (configs/model_selection.yaml -> reports/model_selection.json)",
+    "TEST_SET_EVALUATION (src/models/evaluate.py -> reports/evaluation_results.json)",
+    "EXPLAINABILITY_GRADCAM (src/explainability/gradcam.py -> reports/explainability/)",
+    "PRODUCTION_MODEL_PACKAGE (artifacts/models/production_model.pt)"
+  ]
+}

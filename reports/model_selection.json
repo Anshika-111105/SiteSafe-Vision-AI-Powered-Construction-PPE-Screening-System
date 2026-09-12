@@ -1,0 +1,26 @@
+{
+  "timestamp_utc": "2026-09-12T07:12:51.448205+00:00",
+  "champion_model": "mobilenet_v3_large",
+  "champion_score": 0.932,
+  "decision_rationale": "Construction PPE screening involves asymmetric risk. Failing to detect a non-compliant\nor partially compliant worker (False Negative for unsafe conditions) poses severe physical\nsafety hazards. Therefore, model selection prioritizes Macro F1 and Unsafe Class Recall\non the validation set over raw accuracy.\n",
+  "candidates_evaluated": [
+    {
+      "model_name": "mobilenet_v3_large",
+      "val_macro_f1": 0.9608,
+      "val_unsafe_recall_min": 0.8889,
+      "val_loss": 0.6069,
+      "gate_1_passed": true,
+      "gate_2_passed": true,
+      "composite_score": 0.932
+    },
+    {
+      "model_name": "resnet50",
+      "val_macro_f1": 0.7556,
+      "val_unsafe_recall_min": 0.6667,
+      "val_loss": 0.9619,
+      "gate_1_passed": true,
+      "gate_2_passed": true,
+      "composite_score": 0.72
+    }
+  ]
+}

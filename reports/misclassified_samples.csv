@@ -1,0 +1,4 @@
+sample_id,true_label,predicted_label,confidence,source_image_id,split,image_path
+scene_0014_w01,PARTIAL_PPE,FULL_PPE,0.4309,scene_0014,test,C:\Users\hp\OneDrive\Desktop\Code\Site Safe Vision\data\interim\crops\scene_0014_w01.jpg
+scene_0051_w00,PARTIAL_PPE,FULL_PPE,0.4033,scene_0051,test,C:\Users\hp\OneDrive\Desktop\Code\Site Safe Vision\data\interim\crops\scene_0051_w00.jpg
+scene_0074_w00,PARTIAL_PPE,NO_PPE,0.3754,scene_0074,test,C:\Users\hp\OneDrive\Desktop\Code\Site Safe Vision\data\interim\crops\scene_0074_w00.jpg

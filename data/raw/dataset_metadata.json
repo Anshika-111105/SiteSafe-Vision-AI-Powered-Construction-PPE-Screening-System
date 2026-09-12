@@ -1,0 +1,35 @@
+{
+  "dataset_name": "Construction PPE Detection Dataset",
+  "source_url": "https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0",
+  "dataset_version": "1.0.0",
+  "download_timestamp_utc": "2026-09-12T07:08:57.548132+00:00",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source_class_names": [
+    "human",
+    "helmet",
+    "vest",
+    "boots",
+    "gloves"
+  ],
+  "annotation_format": "JSON_BOUNDING_BOX",
+  "image_count": 120,
+  "annotation_count": 612,
+  "image_dimensions": {
+    "width": 640,
+    "height": 640,
+    "channels": 3
+  },
+  "class_distribution": {
+    "human": 185,
+    "helmet": 100,
+    "vest": 100,
+    "boots": 122,
+    "gloves": 105
+  },
+  "duplicate_count": 0,
+  "corrupted_image_count": 0,
+  "missing_annotation_count": 0,
+  "orphan_annotation_count": 0,
+  "provenance_notes": "Auditable benchmark distribution derived in alignment with official Roboflow Construction PPE Detection schema (CC BY 4.0)."
+}

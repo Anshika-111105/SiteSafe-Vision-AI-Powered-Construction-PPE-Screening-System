@@ -1,0 +1,77 @@
+{
+  "timestamp_utc": "2026-09-12T07:12:52.308995+00:00",
+  "model_name": "mobilenet_v3_large",
+  "evaluation_split": "test",
+  "total_test_samples": 27,
+  "misclassified_count": 3,
+  "metrics": {
+    "accuracy": 0.8889,
+    "macro_precision": 0.8917,
+    "macro_recall": 0.9167,
+    "macro_f1": 0.8931,
+    "weighted_f1": 0.8863,
+    "per_class": {
+      "FULL_PPE": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.8889,
+        "support": 8
+      },
+      "PARTIAL_PPE": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.8571,
+        "support": 12
+      },
+      "NO_PPE": {
+        "precision": 0.875,
+        "recall": 1.0,
+        "f1": 0.9333,
+        "support": 7
+      }
+    },
+    "safety_audit": {
+      "unsafe_recall_min": 0.75,
+      "unsafe_recall_mean": 0.875,
+      "no_ppe_critical_fn_count": 0,
+      "no_ppe_critical_fn_rate": 0.0,
+      "partial_ppe_fn_count": 2,
+      "partial_ppe_fn_rate": 0.1667
+    },
+    "confusion_matrix": [
+      [
+        8,
+        0,
+        0
+      ],
+      [
+        2,
+        9,
+        1
+      ],
+      [
+        0,
+        0,
+        7
+      ]
+    ],
+    "normalized_confusion_matrix": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.1667,
+        0.75,
+        0.0833
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "latency_per_sample_ms": 26.98
+  }
+}
