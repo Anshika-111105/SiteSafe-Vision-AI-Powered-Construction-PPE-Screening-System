@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Dict, Tuple, Any, Optional
@@ -42,12 +43,13 @@ class PPEPredictor:
         else:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = None
-        self.gradcam = None
-        self.metadata = {}
+        self.model: Optional[nn.Module] = None
+        self.gradcam: Optional[GradCAM] = None
+        self.metadata: Dict[str, Any] = {}
         self.idx_to_class = {0: "FULL_PPE", 1: "PARTIAL_PPE", 2: "NO_PPE"}
         self.class_to_idx = {"FULL_PPE": 0, "PARTIAL_PPE": 1, "NO_PPE": 2}
         self.transforms = get_eval_transforms(image_size=224, resize_size=256)
+        self._gradcam_lock = threading.Lock()
 
         self._load_model()
 
@@ -61,16 +63,30 @@ class PPEPredictor:
         model_name = ckpt.get("model_name", "mobilenet_v3_large")
         self.model_name = model_name
 
+        # Load dynamic class mappings from checkpoint if available
+        if "class_to_idx" in ckpt:
+            self.class_to_idx = ckpt["class_to_idx"]
+            self.idx_to_class = {int(v): k for k, v in self.class_to_idx.items()}
+        elif "idx_to_class" in ckpt:
+            self.idx_to_class = {int(k): v for k, v in ckpt["idx_to_class"].items()}
+            self.class_to_idx = {v: int(k) for k, v in self.idx_to_class.items()}
+
+        num_classes = len(self.class_to_idx)
+
         if model_name == "resnet50":
-            self.model = create_resnet50_model(num_classes=3, pretrained=False)
+            self.model = create_resnet50_model(num_classes=num_classes, pretrained=False)
             self.model.load_state_dict(ckpt["state_dict"])
             self.target_layer = self.model.layer4[-1]
         elif model_name == "mobilenet_v3_large":
-            self.model = create_mobilenet_v3_model(num_classes=3, pretrained=False)
+            self.model = create_mobilenet_v3_model(num_classes=num_classes, pretrained=False)
             self.model.load_state_dict(ckpt["state_dict"])
             self.target_layer = self.model.features[-1]
         else:
             raise ValueError(f"Unknown model name: {model_name}")
+
+        # Enable parameter gradients for Grad-CAM backward propagation
+        for p in self.model.parameters():
+            p.requires_grad = True
 
         self.model.to(self.device)
         self.model.eval()
@@ -78,7 +94,7 @@ class PPEPredictor:
         # Initialize Grad-CAM
         self.gradcam = GradCAM(self.model, self.target_layer)
 
-        # Load metadata
+        # Load metadata if present
         if self.metadata_path.exists():
             try:
                 with open(self.metadata_path, "r", encoding="utf-8") as f:
@@ -129,7 +145,7 @@ class PPEPredictor:
 
     def predict_with_gradcam(self, image: Image.Image) -> Tuple[Dict[str, Any], Image.Image]:
         """
-        Runs inference and generates a Grad-CAM overlay PIL Image.
+        Runs inference and generates a Grad-CAM overlay PIL Image with thread-safe backward locking.
         """
         if not self.is_loaded:
             raise RuntimeError("Model is not loaded.")
@@ -137,19 +153,21 @@ class PPEPredictor:
         img_rgb = image.convert("RGB")
         tensor = self.transforms(img_rgb).unsqueeze(0).to(self.device)
 
-        t0 = time.perf_counter()
-        with torch.no_grad():
-            logits = self.model(tensor)
-            probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
-        latency_ms = (time.perf_counter() - t0) * 1000.0
+        with self._gradcam_lock:
+            t0 = time.perf_counter()
+            # 1. Forward pass for prediction probabilities
+            with torch.no_grad():
+                logits = self.model(tensor)
+                probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
+            latency_ms = (time.perf_counter() - t0) * 1000.0
 
-        pred_idx = int(np.argmax(probs))
-        pred_class = self.idx_to_class[pred_idx]
-        conf = float(probs[pred_idx])
+            pred_idx = int(np.argmax(probs))
+            pred_class = self.idx_to_class[pred_idx]
+            conf = float(probs[pred_idx])
 
-        # Generate heatmap using hook
-        heatmap = self.gradcam.generate_heatmap(tensor, class_idx=pred_idx)
-        overlay = overlay_heatmap(img_rgb, heatmap)
+            # 2. Generate Grad-CAM activation heatmap for predicted class
+            heatmap = self.gradcam.generate_heatmap(tensor, class_idx=pred_idx)
+            overlay = overlay_heatmap(img_rgb, heatmap)
 
         probabilities = {
             self.idx_to_class[i]: round(float(probs[i]), 4)

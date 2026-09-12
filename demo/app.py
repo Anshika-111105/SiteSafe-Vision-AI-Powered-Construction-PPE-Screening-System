@@ -1,8 +1,3 @@
-"""
-Gradio Interactive Web Application for SiteSafe Vision.
-Provides interactive PPE compliance screening, risk evaluation, and Grad-CAM explainability heatmaps.
-"""
-
 import sys
 from pathlib import Path
 from typing import Dict, Tuple, Any
