@@ -1,0 +1,13 @@
+# DVC Ignore Rules
+.git
+.gitignore
+.dvcignore
+.venv
+venv
+__pycache__
+*.pyc
+.ipynb_checkpoints
+.pytest_cache
+tests
+docs
+notebooks

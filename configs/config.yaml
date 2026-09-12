@@ -1,0 +1,130 @@
+project:
+  name: "SiteSafe Vision"
+  version: "1.0.0"
+  description: "AI-Powered Construction PPE Compliance Screening System"
+  author: "SiteSafe Vision Engineering Team"
+  license: "Apache-2.0"
+
+reproducibility:
+  seed: 42
+  deterministic_cudnn: true
+  benchmark_cudnn: false
+  use_deterministic_algorithms: true
+  python_hash_seed: 42
+  dataloader_workers: 0 # Deterministic on CPU/Windows
+
+data:
+  dataset_name: "Construction PPE Detection Dataset"
+  source_url: "https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0"
+  source_license: "CC BY 4.0"
+  raw_dir: "data/raw"
+  interim_dir: "data/interim"
+  processed_dir: "data/processed"
+  dataset_metadata_path: "data/raw/dataset_metadata.json"
+  label_audit_path: "data/interim/label_audit.csv"
+  split_manifest_path: "data/processed/split_manifest.csv"
+  data_manifest_path: "reports/data_manifest.csv"
+  source_classes:
+    - "helmet"
+    - "vest"
+    - "human"
+    - "boots"
+    - "gloves"
+  target_classes:
+    - "FULL_PPE"
+    - "PARTIAL_PPE"
+    - "NO_PPE"
+  class_to_idx:
+    FULL_PPE: 0
+    PARTIAL_PPE: 1
+    NO_PPE: 2
+  idx_to_class:
+    0: "FULL_PPE"
+    1: "PARTIAL_PPE"
+    2: "NO_PPE"
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  group_by_source_image: true
+
+labeling_rules:
+  min_worker_crop_size: 32 # Minimum height/width in pixels
+  max_truncation_ratio: 0.85 # Max allowable boundary crop truncation
+  helmet_overlap_threshold: 0.30
+  vest_overlap_threshold: 0.30
+  mandatory_ppe:
+    - "helmet"
+    - "vest"
+
+preprocessing:
+  image_size: 224
+  resize_size: 256
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  train_augmentation:
+    horizontal_flip_prob: 0.5
+    rotation_degrees: 10
+    color_jitter:
+      brightness: 0.15
+      contrast: 0.15
+      saturation: 0.10
+      hue: 0.05
+
+training:
+  batch_size: 16
+  num_epochs: 10
+  optimizer: "AdamW"
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  lr_scheduler: "CosineAnnealingLR"
+  min_lr: 0.000001
+  early_stopping_patience: 3
+  early_stopping_metric: "val_macro_f1"
+  early_stopping_mode: "max"
+  phase1_freeze_backbone_epochs: 3
+  phase2_finetune_epochs: 7
+
+models:
+  resnet50:
+    name: "resnet50"
+    weights: "ResNet50_Weights.DEFAULT"
+    trainable_phase1: ["fc"]
+    trainable_phase2: ["layer4", "fc"]
+  mobilenet_v3_large:
+    name: "mobilenet_v3_large"
+    weights: "MobileNet_V3_Large_Weights.DEFAULT"
+    trainable_phase1: ["classifier"]
+    trainable_phase2: ["features.15", "features.16", "classifier"]
+
+artifacts:
+  model_dir: "artifacts/models"
+  best_model_path: "artifacts/models/best_model.pt"
+  production_model_path: "artifacts/models/production_model.pt"
+  model_metadata_path: "artifacts/models/model_metadata.json"
+  reports_dir: "reports"
+  explainability_dir: "reports/explainability"
+  lineage_report_path: "reports/lineage.json"
+  checksums_path: "reports/checksums.sha256"
+
+api:
+  title: "SiteSafe Vision API"
+  version: "1.0.0"
+  max_upload_size_bytes: 10485760 # 10 MB
+  allowed_content_types:
+    - "image/jpeg"
+    - "image/png"
+    - "image/webp"
+  timeout_seconds: 30
+  rate_limit_per_minute: 120
+
+risk_matrix:
+  NO_PPE:
+    risk_level: "HIGH"
+    recommendation: "CRITICAL: Mandatory PPE missing. Immediate site entry restriction and safety supervisor intervention required."
+  PARTIAL_PPE:
+    risk_level: "MEDIUM"
+    recommendation: "CAUTION: Incomplete PPE detected. Manual safety inspection recommended before authorized site entry."
+  FULL_PPE:
+    risk_level: "LOW"
+    recommendation: "COMPLIANT: Standard PPE detected. Proceed with standard site safety protocols."

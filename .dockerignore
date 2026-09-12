@@ -1,0 +1,44 @@
+# Docker Build Context Exclusions
+.git
+.github
+.gitignore
+.dvc
+.dvcignore
+dvc.yaml
+dvc.lock
+dvc_storage
+
+# Virtual environments and caches
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+
+# Raw and processed datasets (never bake large data into images)
+data/
+
+# Documentation and Presentation Notebooks
+docs/
+notebooks/
+demo/
+
+# Evaluation and Audit Reports
+reports/
+
+# Checkpoints and scratch
+artifacts/models/best_resnet50.pt
+artifacts/models/best_mobilenet_v3_large.pt
+artifacts/models/best_model.pt
+artifacts/models/metadata_*.json
+
+# Secrets
+.env
+*.env.local
+*.pem
+*.key

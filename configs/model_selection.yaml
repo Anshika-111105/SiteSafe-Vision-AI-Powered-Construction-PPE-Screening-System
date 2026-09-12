@@ -1,0 +1,37 @@
+version: "1.0.0"
+created_date: "2026-09-12"
+rationale: |
+  Construction PPE screening involves asymmetric risk. Failing to detect a non-compliant
+  or partially compliant worker (False Negative for unsafe conditions) poses severe physical
+  safety hazards. Therefore, model selection prioritizes Macro F1 and Unsafe Class Recall
+  on the validation set over raw accuracy.
+
+selection_protocol:
+  evaluation_dataset: "validation"
+  test_dataset_policy: "Untouched until winning model selection is frozen and locked."
+
+decision_rules:
+  gate_1_macro_f1:
+    metric: "val_macro_f1"
+    minimum_threshold: 0.60
+    description: "Model must achieve balanced class discrimination across all 3 classes."
+
+  gate_2_unsafe_recall:
+    metric: "val_unsafe_recall_min"
+    minimum_threshold: 0.60
+    classes: ["NO_PPE", "PARTIAL_PPE"]
+    description: "Minimum acceptable recall on high-risk and medium-risk non-compliant categories."
+
+  tie_breakers:
+    priority_1: "val_macro_f1" # Higher is better
+    priority_2: "val_unsafe_recall_mean" # Higher is better
+    priority_3: "val_loss" # Lower is better
+    priority_4: "inference_latency_ms" # Lower is better
+
+candidate_models:
+  - name: "resnet50"
+    backbone: "torchvision.models.resnet50"
+    target_environment: "High-accuracy edge server or cloud inspection"
+  - name: "mobilenet_v3_large"
+    backbone: "torchvision.models.mobilenet_v3_large"
+    target_environment: "Low-latency mobile or embedded site camera"
