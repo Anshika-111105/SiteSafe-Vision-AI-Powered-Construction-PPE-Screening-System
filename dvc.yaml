@@ -1,0 +1,143 @@
+stages:
+  data_ingest:
+    cmd: python src/data/ingest_dataset.py
+    deps:
+      - src/data/ingest_dataset.py
+      - configs/config.yaml
+    outs:
+      - data/raw/images:
+          cache: false
+      - data/raw/annotations:
+          cache: false
+      - data/raw/dataset_metadata.json:
+          cache: false
+
+  build_classification_dataset:
+    cmd: python src/data/build_classification_dataset.py
+    deps:
+      - src/data/build_classification_dataset.py
+      - data/raw/images
+      - data/raw/annotations
+    outs:
+      - data/interim/crops:
+          cache: false
+      - data/interim/label_audit.csv:
+          cache: false
+
+  data_validate:
+    cmd: python src/data/quality_audit.py
+    deps:
+      - src/data/quality_audit.py
+      - data/interim/crops
+      - data/interim/label_audit.csv
+    outs:
+      - reports/data_manifest.csv:
+          cache: false
+      - reports/data_quality_report.md:
+          cache: false
+    metrics:
+      - reports/data_quality_report.json:
+          cache: false
+
+  data_deduplicate_and_leakage_audit:
+    cmd: python src/data/leakage_audit.py
+    deps:
+      - src/data/leakage_audit.py
+      - reports/data_manifest.csv
+      - configs/config.yaml
+    outs:
+      - data/processed/split_manifest.csv:
+          cache: false
+      - reports/data_leakage_report.md:
+          cache: false
+    metrics:
+      - reports/data_leakage_report.json:
+          cache: false
+
+  train_resnet:
+    cmd: python src/models/train.py --model resnet50
+    deps:
+      - src/models/train.py
+      - src/models/architectures.py
+      - src/models/dataset.py
+      - src/features/transforms.py
+      - data/processed/split_manifest.csv
+      - data/interim/crops
+      - configs/config.yaml
+    outs:
+      - artifacts/models/best_resnet50.pt:
+          cache: false
+      - artifacts/models/metadata_resnet50.json:
+          cache: false
+
+  train_mobilenet:
+    cmd: python src/models/train.py --model mobilenet_v3_large
+    deps:
+      - src/models/train.py
+      - src/models/architectures.py
+      - src/models/dataset.py
+      - src/features/transforms.py
+      - data/processed/split_manifest.csv
+      - data/interim/crops
+      - configs/config.yaml
+    outs:
+      - artifacts/models/best_mobilenet_v3_large.pt:
+          cache: false
+      - artifacts/models/metadata_mobilenet_v3_large.json:
+          cache: false
+
+  evaluate_and_select:
+    cmd: python src/models/evaluate.py
+    deps:
+      - src/models/evaluate.py
+      - artifacts/models/metadata_resnet50.json
+      - artifacts/models/metadata_mobilenet_v3_large.json
+      - configs/model_selection.yaml
+      - data/processed/split_manifest.csv
+    outs:
+      - artifacts/models/production_model.pt:
+          cache: false
+      - artifacts/models/best_model.pt:
+          cache: false
+      - artifacts/models/model_metadata.json:
+          cache: false
+      - reports/misclassified_samples.csv:
+          cache: false
+      - reports/evaluation_results.md:
+          cache: false
+    metrics:
+      - reports/model_selection.json:
+          cache: false
+      - reports/evaluation_results.json:
+          cache: false
+
+  explainability:
+    cmd: python src/explainability/gradcam.py
+    deps:
+      - src/explainability/gradcam.py
+      - artifacts/models/production_model.pt
+      - data/interim/crops
+    outs:
+      - reports/explainability:
+          cache: false
+
+  package_and_lineage:
+    cmd: python scripts/verify_artifacts.py
+    deps:
+      - scripts/verify_artifacts.py
+      - artifacts/models/production_model.pt
+      - reports/evaluation_results.json
+    outs:
+      - reports/checksums.sha256:
+          cache: false
+      - reports/lineage.json:
+          cache: false
+
+  environment_report:
+    cmd: python scripts/environment_report.py
+    deps:
+      - scripts/environment_report.py
+      - configs/config.yaml
+    metrics:
+      - reports/environment.json:
+          cache: false

@@ -1,0 +1,308 @@
+schema: '2.0'
+stages:
+  data_ingest:
+    cmd: python src/data/ingest_dataset.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 8bfa4f97ae363a97576872518d4bffab
+      size: 3595
+    - path: src/data/ingest_dataset.py
+      hash: md5
+      md5: 3f47a28438d0dc7d4000410de67d80b7
+      size: 11174
+    outs:
+    - path: data/raw/annotations
+      hash: md5
+      md5: 53c038489d5ed5247b3bbd8fc0027119.dir
+      size: 114502
+      nfiles: 120
+    - path: data/raw/dataset_metadata.json
+      hash: md5
+      md5: d139895f9a4860dfc265f4b2a62aa292
+      size: 1039
+    - path: data/raw/images
+      hash: md5
+      md5: 1d2cf5c37ff172ef589538106f1ab7ff.dir
+      size: 3822443
+      nfiles: 120
+  build_classification_dataset:
+    cmd: python src/data/build_classification_dataset.py
+    deps:
+    - path: data/raw/annotations
+      hash: md5
+      md5: 53c038489d5ed5247b3bbd8fc0027119.dir
+      size: 114502
+      nfiles: 120
+    - path: data/raw/images
+      hash: md5
+      md5: 1d2cf5c37ff172ef589538106f1ab7ff.dir
+      size: 3822443
+      nfiles: 120
+    - path: src/data/build_classification_dataset.py
+      hash: md5
+      md5: df22b0f25864cea8b458947855ad3fea
+      size: 8433
+    outs:
+    - path: data/interim/crops
+      hash: md5
+      md5: 2679a657ca2e625efc23794b448482ca.dir
+      size: 1483976
+      nfiles: 185
+    - path: data/interim/label_audit.csv
+      hash: md5
+      md5: 03c4fdf41918d03dc4ac2c9ccac4d508
+      size: 17353
+  data_validate:
+    cmd: python src/data/quality_audit.py
+    deps:
+    - path: data/interim/crops
+      hash: md5
+      md5: 2679a657ca2e625efc23794b448482ca.dir
+      size: 1483976
+      nfiles: 185
+    - path: data/interim/label_audit.csv
+      hash: md5
+      md5: 03c4fdf41918d03dc4ac2c9ccac4d508
+      size: 17353
+    - path: src/data/quality_audit.py
+      hash: md5
+      md5: 6a0b35ae30265c84e11bfe290f187726
+      size: 8852
+    outs:
+    - path: reports/data_manifest.csv
+      hash: md5
+      md5: 414bd54e2b94d6bf38e58d15a1a07179
+      size: 44661
+    - path: reports/data_quality_report.json
+      hash: md5
+      md5: 33263b297ce804aca0c392a988a7dad5
+      size: 444
+    - path: reports/data_quality_report.md
+      hash: md5
+      md5: 89c8a73c546a0bd81f8c248845b84f7a
+      size: 606
+  data_deduplicate_and_leakage_audit:
+    cmd: python src/data/leakage_audit.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 8bfa4f97ae363a97576872518d4bffab
+      size: 3595
+    - path: reports/data_manifest.csv
+      hash: md5
+      md5: 41c30fc117c13e4d0e3724e964c6168f
+      size: 43661
+    - path: src/data/leakage_audit.py
+      hash: md5
+      md5: 0c4b6383210e5409f64185abddd010d6
+      size: 9868
+    outs:
+    - path: data/processed/split_manifest.csv
+      hash: md5
+      md5: 1a162bbe649f08566f7fefdbeb4dc9e6
+      size: 36913
+    - path: reports/data_leakage_report.json
+      hash: md5
+      md5: 2f968791f70214c97cbbe611904d687b
+      size: 775
+    - path: reports/data_leakage_report.md
+      hash: md5
+      md5: 63937e0f694f57cb5f3caa7a29819d10
+      size: 817
+  train_resnet:
+    cmd: python src/models/train.py --model resnet50
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 8bfa4f97ae363a97576872518d4bffab
+      size: 3595
+    - path: data/interim/crops
+      hash: md5
+      md5: 2679a657ca2e625efc23794b448482ca.dir
+      size: 1483976
+      nfiles: 185
+    - path: data/processed/split_manifest.csv
+      hash: md5
+      md5: 1a162bbe649f08566f7fefdbeb4dc9e6
+      size: 36913
+    - path: src/features/transforms.py
+      hash: md5
+      md5: 76e2288a2ef2ad88f7da80100d81a566
+      size: 1325
+    - path: src/models/architectures.py
+      hash: md5
+      md5: baff572f9eb0f23465bfd5c78b5ec5db
+      size: 2988
+    - path: src/models/dataset.py
+      hash: md5
+      md5: a84546989d42be1374b4ed67492359cb
+      size: 1690
+    - path: src/models/train.py
+      hash: md5
+      md5: 36673847ce32dcdc93e5332b1dc2a7f3
+      size: 11838
+    outs:
+    - path: artifacts/models/best_resnet50.pt
+      hash: md5
+      md5: c380cb7e5192158ec3b4b271f50bc7e5
+      size: 94372643
+    - path: artifacts/models/metadata_resnet50.json
+      hash: md5
+      md5: 6d87675eae4011b345a7f42c83ec8d52
+      size: 14302
+  train_mobilenet:
+    cmd: python src/models/train.py --model mobilenet_v3_large
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 8bfa4f97ae363a97576872518d4bffab
+      size: 3595
+    - path: data/interim/crops
+      hash: md5
+      md5: 2679a657ca2e625efc23794b448482ca.dir
+      size: 1483976
+      nfiles: 185
+    - path: data/processed/split_manifest.csv
+      hash: md5
+      md5: 1a162bbe649f08566f7fefdbeb4dc9e6
+      size: 36913
+    - path: src/features/transforms.py
+      hash: md5
+      md5: 76e2288a2ef2ad88f7da80100d81a566
+      size: 1325
+    - path: src/models/architectures.py
+      hash: md5
+      md5: baff572f9eb0f23465bfd5c78b5ec5db
+      size: 2988
+    - path: src/models/dataset.py
+      hash: md5
+      md5: a84546989d42be1374b4ed67492359cb
+      size: 1690
+    - path: src/models/train.py
+      hash: md5
+      md5: 36673847ce32dcdc93e5332b1dc2a7f3
+      size: 11838
+    outs:
+    - path: artifacts/models/best_mobilenet_v3_large.pt
+      hash: md5
+      md5: 7a0d2f95f63a5ba63d7b784218cf73b7
+      size: 17030191
+    - path: artifacts/models/metadata_mobilenet_v3_large.json
+      hash: md5
+      md5: b2a7411e99046867332981aea0de8e7f
+      size: 19412
+  evaluate_and_select:
+    cmd: python src/models/evaluate.py
+    deps:
+    - path: artifacts/models/metadata_mobilenet_v3_large.json
+      hash: md5
+      md5: b2a7411e99046867332981aea0de8e7f
+      size: 19412
+    - path: artifacts/models/metadata_resnet50.json
+      hash: md5
+      md5: 6d87675eae4011b345a7f42c83ec8d52
+      size: 14302
+    - path: configs/model_selection.yaml
+      hash: md5
+      md5: e59b6af625454383e6daabd6d9149ede
+      size: 1463
+    - path: data/processed/split_manifest.csv
+      hash: md5
+      md5: 1a162bbe649f08566f7fefdbeb4dc9e6
+      size: 36913
+    - path: src/models/evaluate.py
+      hash: md5
+      md5: 72ec6bfab58a4f38a76f977779285ff4
+      size: 11180
+    outs:
+    - path: artifacts/models/best_model.pt
+      hash: md5
+      md5: 7a0d2f95f63a5ba63d7b784218cf73b7
+      size: 17030191
+    - path: artifacts/models/model_metadata.json
+      hash: md5
+      md5: b2a7411e99046867332981aea0de8e7f
+      size: 19412
+    - path: artifacts/models/production_model.pt
+      hash: md5
+      md5: 7a0d2f95f63a5ba63d7b784218cf73b7
+      size: 17030191
+    - path: reports/evaluation_results.json
+      hash: md5
+      md5: 2b50742e030bd6f844535c33d4a8dd74
+      size: 1474
+    - path: reports/evaluation_results.md
+      hash: md5
+      md5: 460e601ae01bee6cffdc22701ad8a304
+      size: 1234
+    - path: reports/misclassified_samples.csv
+      hash: md5
+      md5: f77d1a81ce11cadd56d4cb2e0a6546b9
+      size: 527
+    - path: reports/model_selection.json
+      hash: md5
+      md5: d4fc76bffabba6ee242f20aca43731a9
+      size: 989
+  explainability:
+    cmd: python src/explainability/gradcam.py
+    deps:
+    - path: artifacts/models/production_model.pt
+      hash: md5
+      md5: 7a0d2f95f63a5ba63d7b784218cf73b7
+      size: 17030191
+    - path: data/interim/crops
+      hash: md5
+      md5: 2679a657ca2e625efc23794b448482ca.dir
+      size: 1483976
+      nfiles: 185
+    - path: src/explainability/gradcam.py
+      hash: md5
+      md5: 7e28f7e97af7abce8d74725b635a7521
+      size: 5943
+    outs:
+    - path: reports/explainability
+      hash: md5
+      md5: 5b22911e8165ccd9b0068554fd3df9bf.dir
+      size: 773044
+      nfiles: 6
+  package_and_lineage:
+    cmd: python scripts/verify_artifacts.py
+    deps:
+    - path: artifacts/models/production_model.pt
+      hash: md5
+      md5: 7a0d2f95f63a5ba63d7b784218cf73b7
+      size: 17030191
+    - path: reports/evaluation_results.json
+      hash: md5
+      md5: 2b50742e030bd6f844535c33d4a8dd74
+      size: 1474
+    - path: scripts/verify_artifacts.py
+      hash: md5
+      md5: 9a315672455aec91257804ca5c415bf3
+      size: 5084
+    outs:
+    - path: reports/checksums.sha256
+      hash: md5
+      md5: 3723a2f866d770dd146641cd6b3811c4
+      size: 1174
+    - path: reports/lineage.json
+      hash: md5
+      md5: 0d7f5eb1b199fad00cf70e19cff23170
+      size: 1800
+  environment_report:
+    cmd: python scripts/environment_report.py
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 8bfa4f97ae363a97576872518d4bffab
+      size: 3595
+    - path: scripts/environment_report.py
+      hash: md5
+      md5: a252bfa00b9939554897bf9c4d7a8f5d
+      size: 5197
+    outs:
+    - path: reports/environment.json
+      hash: md5
+      md5: 5e097785aac97305e2f0908ff9373089
+      size: 1369
