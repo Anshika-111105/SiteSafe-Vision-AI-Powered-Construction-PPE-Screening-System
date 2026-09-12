@@ -1,0 +1,115 @@
+name: SiteSafe Vision Production CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-test:
+    name: Code Quality, Tests & Data Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Locked Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev]"
+
+      - name: Validate Configuration Files
+        run: |
+          python -c "import yaml; yaml.safe_load(open('configs/config.yaml')); yaml.safe_load(open('configs/model_selection.yaml')); print('Configurations valid.')"
+
+      - name: Run Syntax & Lint Checks
+        run: |
+          ruff check src/ app/ tests/ || flake8 src/ app/ tests/ --max-line-length=120 --ignore=E501,E203,W503
+
+      - name: Execute Full Test Suite (Unit & Integration)
+        run: |
+          pytest tests/unit tests/integration -v --durations=10
+
+      - name: Verify Artifact Integrity & Lineage
+        run: |
+          python scripts/verify_artifacts.py
+
+      - name: Verify Citation Audit
+        run: |
+          python scripts/citation_audit.py
+
+  docker-smoke-test:
+    name: Container Build & API Smoke Test
+    runs-on: ubuntu-latest
+    needs: validate-and-test
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Production Docker Image
+        run: |
+          docker build -t sitesafe-vision:ci-test .
+
+      - name: Start Application Container
+        run: |
+          docker run -d --name sitesafe-app -p 8000:8000 sitesafe-vision:ci-test
+
+      - name: Wait for Container Health
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/health | grep -q '"status":"healthy"'; then
+              echo "Container is healthy and ready!"
+              exit 0
+            fi
+            echo "Waiting for service to become healthy... ($i/30)"
+            sleep 2
+          done
+          echo "ERROR: Container failed to reach healthy state."
+          docker logs sitesafe-app
+          exit 1
+
+      - name: Verify /metadata Endpoint
+        run: |
+          curl -s -f http://localhost:8000/metadata | grep -q '"model_name"'
+
+      - name: Verify /version Endpoint
+        run: |
+          curl -s -f http://localhost:8000/version | grep -q '"version":"1.0.0"'
+
+      - name: Verify /predict Endpoint with Fixture
+        run: |
+          python -c "
+          import urllib.request, io
+          from PIL import Image
+          img = Image.new('RGB', (224, 224), color=(100, 150, 200))
+          buf = io.BytesIO()
+          img.save(buf, format='JPEG')
+          with open('smoke_sample.jpg', 'wb') as f:
+              f.write(buf.getvalue())
+          "
+          curl -s -f -X POST http://localhost:8000/predict \
+            -F "file=@smoke_sample.jpg" | grep -q '"prediction"'
+
+      - name: Stop and Cleanup Container
+        if: always()
+        run: |
+          docker stop sitesafe-app || true
+          docker rm sitesafe-app || true
