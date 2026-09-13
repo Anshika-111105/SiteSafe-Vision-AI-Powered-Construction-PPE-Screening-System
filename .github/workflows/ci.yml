@@ -37,7 +37,12 @@ jobs:
 
       - name: Run Syntax & Lint Checks
         run: |
-          ruff check src/ app/ tests/ || flake8 src/ app/ tests/ --max-line-length=120 --ignore=E501,E203,W503
+          ruff check src/ app/ tests/ scripts/ demo/
+          flake8 src/ app/ tests/ scripts/ demo/ --max-line-length=120 --ignore=E501,E203,W503,E402
+
+      - name: Initialize Baseline Test Artifacts & Model Checkpoints
+        run: |
+          python -c "from tests.fixtures.create_fixtures import ensure_test_artifacts; ensure_test_artifacts()"
 
       - name: Execute Full Test Suite (Unit & Integration)
         run: |
@@ -61,12 +66,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up Python for Build Fixtures
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate Baseline Model Weights for Container Build
+        run: |
+          pip install torch torchvision pydantic pillow
+          python -c "from tests.fixtures.create_fixtures import ensure_test_artifacts; ensure_test_artifacts()"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build Production Docker Image
         run: |
           docker build -t sitesafe-vision:ci-test .
+
 
       - name: Start Application Container
         run: |

@@ -1,7 +1,7 @@
 # SiteSafe Vision: Data Leakage & Split Audit Report
 
 - **Audit Status**: `PASSED`
-- **Audit Timestamp (UTC)**: `2026-09-12T07:09:03.207605+00:00`
+- **Audit Timestamp (UTC)**: `2026-09-13T23:02:21.829630+00:00`
 - **Grouping Strategy**: `group_by_source_image_id` (Crops from same scene strictly coupled)
 - **Random Seed**: `42`
 

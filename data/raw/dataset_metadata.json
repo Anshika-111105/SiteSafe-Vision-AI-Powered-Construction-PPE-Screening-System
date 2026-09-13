@@ -2,7 +2,7 @@
   "dataset_name": "Construction PPE Detection Dataset",
   "source_url": "https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0",
   "dataset_version": "1.0.0",
-  "download_timestamp_utc": "2026-09-12T07:08:57.548132+00:00",
+  "download_timestamp_utc": "2026-09-13T23:01:54.094129+00:00",
   "license": "CC BY 4.0",
   "license_url": "https://creativecommons.org/licenses/by/4.0/",
   "source_class_names": [

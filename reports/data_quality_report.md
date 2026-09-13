@@ -1,7 +1,7 @@
 # SiteSafe Vision: Data Quality Audit Report
 
 - **Audit Status**: `PASSED`
-- **Audit Timestamp (UTC)**: `2026-09-12T07:08:59.766869+00:00`
+- **Audit Timestamp (UTC)**: `2026-09-13T23:02:03.862057+00:00`
 - **Total Valid Examples**: `185`
 - **Imbalance Ratio**: `1.40`
 
@@ -9,9 +9,9 @@
 
 | Class Name | Count | Percentage |
 | :--- | :--- | :--- |
-| `FULL_PPE` | 65 | 35.1% |
-| `NO_PPE` | 50 | 27.0% |
 | `PARTIAL_PPE` | 70 | 37.8% |
+| `NO_PPE` | 50 | 27.0% |
+| `FULL_PPE` | 65 | 35.1% |
 
 ## Integrity Metrics
 

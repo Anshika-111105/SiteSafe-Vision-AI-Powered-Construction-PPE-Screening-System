@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-09-12T07:09:03.207605+00:00",
+  "timestamp_utc": "2026-09-13T23:02:21.829630+00:00",
   "leakage_gate_passed": true,
   "grouping_strategy": "group_by_source_image_id",
   "random_seed": 42,

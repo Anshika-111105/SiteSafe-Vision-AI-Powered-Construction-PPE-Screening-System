@@ -200,4 +200,6 @@ def get_predictor() -> PPEPredictor:
     global _predictor_instance
     if _predictor_instance is None:
         _predictor_instance = PPEPredictor()
+    elif not _predictor_instance.is_loaded:
+        _predictor_instance._load_model()
     return _predictor_instance
