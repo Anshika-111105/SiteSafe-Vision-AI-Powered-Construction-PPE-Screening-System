@@ -1,15 +1,3 @@
----
-title: SiteSafe Vision - AI Construction PPE Screening
-emoji: 🦺
-colorFrom: yellow
-colorTo: blue
-sdk: gradio
-sdk_version: 6.27.0
-app_file: demo/app.py
-pinned: false
-license: apache-2.0
----
-
 # 🦺 SiteSafe Vision
 ### AI-Powered Construction PPE Compliance Screening System
 
