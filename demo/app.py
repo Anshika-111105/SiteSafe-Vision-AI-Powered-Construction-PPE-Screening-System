@@ -70,7 +70,7 @@ custom_css = """
 .risk-low { background-color: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
 """
 
-with gr.Blocks(title="SiteSafe Vision | PPE Screening System", css=custom_css, theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="SiteSafe Vision | PPE Screening System") as demo:
     gr.Markdown("# 🦺 SiteSafe Vision")
     gr.Markdown("### AI-Powered Construction PPE Compliance Screening System")
     gr.Markdown(f"> {DISCLAIMER_TEXT}")
@@ -108,4 +108,5 @@ with gr.Blocks(title="SiteSafe Vision | PPE Screening System", css=custom_css, t
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=False)
+    demo.launch(server_name="0.0.0.0", server_port=7860, share=False, theme=gr.themes.Soft(), css=custom_css)
+
