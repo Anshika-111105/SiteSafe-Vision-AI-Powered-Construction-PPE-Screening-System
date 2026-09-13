@@ -35,25 +35,27 @@ class PPEPredictor:
         if metadata_path is None:
             metadata_path = PROJECT_ROOT / "artifacts" / "models" / "model_metadata.json"
 
-        self.model_path = Path(model_path)
-        self.metadata_path = Path(metadata_path)
+        self.model_path: Path = Path(model_path)
+        self.metadata_path: Path = Path(metadata_path)
 
         if device:
-            self.device = torch.device(device)
+            self.device: torch.device = torch.device(device)
         else:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.model: Optional[nn.Module] = None
+        self.target_layer: Optional[nn.Module] = None
         self.gradcam: Optional[GradCAM] = None
+        self.model_name: str = "mobilenet_v3_large"
         self.metadata: Dict[str, Any] = {}
-        self.idx_to_class = {0: "FULL_PPE", 1: "PARTIAL_PPE", 2: "NO_PPE"}
-        self.class_to_idx = {"FULL_PPE": 0, "PARTIAL_PPE": 1, "NO_PPE": 2}
+        self.idx_to_class: Dict[int, str] = {0: "FULL_PPE", 1: "PARTIAL_PPE", 2: "NO_PPE"}
+        self.class_to_idx: Dict[str, int] = {"FULL_PPE": 0, "PARTIAL_PPE": 1, "NO_PPE": 2}
         self.transforms = get_eval_transforms(image_size=224, resize_size=256)
-        self._gradcam_lock = threading.Lock()
+        self._gradcam_lock: threading.Lock = threading.Lock()
 
         self._load_model()
 
-    def _load_model(self):
+    def _load_model(self) -> None:
         if not self.model_path.exists():
             logger.warning(f"Production model not found at {self.model_path}. Predictor will run in uninitialized state.")
             return
@@ -74,13 +76,15 @@ class PPEPredictor:
         num_classes = len(self.class_to_idx)
 
         if model_name == "resnet50":
-            self.model = create_resnet50_model(num_classes=num_classes, pretrained=False)
-            self.model.load_state_dict(ckpt["state_dict"])
-            self.target_layer = self.model.layer4[-1]
+            model = create_resnet50_model(num_classes=num_classes, pretrained=False)
+            model.load_state_dict(ckpt["state_dict"])
+            self.target_layer = model.layer4[-1]
+            self.model = model
         elif model_name == "mobilenet_v3_large":
-            self.model = create_mobilenet_v3_model(num_classes=num_classes, pretrained=False)
-            self.model.load_state_dict(ckpt["state_dict"])
-            self.target_layer = self.model.features[-1]
+            model = create_mobilenet_v3_model(num_classes=num_classes, pretrained=False)
+            model.load_state_dict(ckpt["state_dict"])
+            self.target_layer = model.features[-1]
+            self.model = model
         else:
             raise ValueError(f"Unknown model name: {model_name}")
 
@@ -92,7 +96,8 @@ class PPEPredictor:
         self.model.eval()
 
         # Initialize Grad-CAM
-        self.gradcam = GradCAM(self.model, self.target_layer)
+        if self.target_layer is not None:
+            self.gradcam = GradCAM(self.model, self.target_layer)
 
         # Load metadata if present
         if self.metadata_path.exists():
@@ -112,15 +117,16 @@ class PPEPredictor:
         """
         Runs inference on a PIL Image and returns prediction details.
         """
-        if not self.is_loaded:
+        if self.model is None:
             raise RuntimeError("Model is not loaded. Ensure production_model.pt exists.")
 
+        model: nn.Module = self.model
         t0 = time.perf_counter()
         img_rgb = image.convert("RGB")
         tensor = self.transforms(img_rgb).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
-            logits = self.model(tensor)
+            logits = model(tensor)
             probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
 
         latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -140,16 +146,18 @@ class PPEPredictor:
             "probabilities": probabilities,
             "inference_latency_ms": round(latency_ms, 2),
             "model_version": self.metadata.get("model_version", "1.0.0"),
-            "model_name": getattr(self, "model_name", "mobilenet_v3_large"),
+            "model_name": self.model_name,
         }
 
     def predict_with_gradcam(self, image: Image.Image) -> Tuple[Dict[str, Any], Image.Image]:
         """
         Runs inference and generates a Grad-CAM overlay PIL Image with thread-safe backward locking.
         """
-        if not self.is_loaded:
-            raise RuntimeError("Model is not loaded.")
+        if self.model is None or self.gradcam is None:
+            raise RuntimeError("Model is not loaded or Grad-CAM is not initialized.")
 
+        model: nn.Module = self.model
+        gradcam: GradCAM = self.gradcam
         img_rgb = image.convert("RGB")
         tensor = self.transforms(img_rgb).unsqueeze(0).to(self.device)
 
@@ -157,7 +165,7 @@ class PPEPredictor:
             t0 = time.perf_counter()
             # 1. Forward pass for prediction probabilities
             with torch.no_grad():
-                logits = self.model(tensor)
+                logits = model(tensor)
                 probs = torch.softmax(logits, dim=1)[0].cpu().numpy()
             latency_ms = (time.perf_counter() - t0) * 1000.0
 
@@ -166,7 +174,7 @@ class PPEPredictor:
             conf = float(probs[pred_idx])
 
             # 2. Generate Grad-CAM activation heatmap for predicted class
-            heatmap = self.gradcam.generate_heatmap(tensor, class_idx=pred_idx)
+            heatmap = gradcam.generate_heatmap(tensor, class_idx=pred_idx)
             overlay = overlay_heatmap(img_rgb, heatmap)
 
         probabilities = {
@@ -180,7 +188,7 @@ class PPEPredictor:
             "probabilities": probabilities,
             "inference_latency_ms": round(latency_ms, 2),
             "model_version": self.metadata.get("model_version", "1.0.0"),
-            "model_name": getattr(self, "model_name", "mobilenet_v3_large"),
+            "model_name": self.model_name,
         }
         return res, overlay
 
