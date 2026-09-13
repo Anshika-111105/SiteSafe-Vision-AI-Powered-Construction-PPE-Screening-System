@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-09-12T07:24:27.623350+00:00",
+  "timestamp_utc": "2026-09-13T20:39:29.905555+00:00",
   "project_name": "SiteSafe Vision",
   "system": {
     "os": "Windows",
@@ -8,7 +8,7 @@
     "architecture": "AMD64",
     "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
     "python_version": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
-    "python_executable": "C:\\Users\\hp\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+    "python_executable": "c:\\Users\\hp\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
   },
   "hardware": {
     "cpu_count_logical": 8,
@@ -18,7 +18,7 @@
     "gpu_devices": []
   },
   "version_control": {
-    "git_commit": "1c28142d136ff5268eea662499ca1424e69e3e85",
+    "git_commit": "1b14c0cd456bed4e0816b044a7d00df48fa95532",
     "git_branch": "main",
     "dvc_version": "DVC version: 3.67.1 (pip)"
   },
@@ -35,7 +35,7 @@
     "sklearn": "1.9.0",
     "PIL": "12.2.0",
     "scipy": "1.17.1",
-    "fastapi": "0.141.1",
+    "fastapi": "0.135.3",
     "uvicorn": "0.49.0",
     "gradio": "6.27.0",
     "pydantic": "2.13.4",

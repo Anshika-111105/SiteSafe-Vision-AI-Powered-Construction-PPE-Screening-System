@@ -1,4 +1,4 @@
-# 🦺 SiteSafe Vision
+# SiteSafe Vision
 ### AI-Powered Construction PPE Compliance Screening System
 
 [![CI Pipeline](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](.github/workflows/ci.yml)
@@ -10,11 +10,11 @@
 
 ---
 
-> ⚠️ **SAFETY & REGULATORY DISCLAIMER**: **SiteSafe Vision is an AI-based image screening aid.** It does **not** perform certified safety inspections, autonomous entry gating, or legally binding regulatory safety auditing. It is designed to assist site safety supervisors through standardized, explainable compliance screening.
+> **SAFETY & REGULATORY DISCLAIMER**: **SiteSafe Vision is an AI-based image screening aid.** It does **not** perform certified safety inspections, autonomous entry gating, or legally binding regulatory safety auditing. It is designed to assist site safety supervisors through standardized, explainable compliance screening.
 
 ---
 
-## 📌 1. Project Overview
+## 1. Project Overview
 
 Construction environments require strict adherence to **Personal Protective Equipment (PPE)** standards. SiteSafe Vision classifies worker-centered image crops into three discrete compliance categories:
 
@@ -30,7 +30,7 @@ In addition to classification, the system computes:
 
 ---
 
-## 🏛️ 2. System Architecture
+## 2. System Architecture
 
 ```
                                   [ Roboflow Universe Source (CC BY 4.0) ]
@@ -71,7 +71,7 @@ In addition to classification, the system computes:
 
 ---
 
-## 📊 3. Primary Dataset & Data Governance
+## 3. Primary Dataset & Data Governance
 
 - **Source**: Construction PPE Detection Dataset (Roboflow Universe) [^roboflow_source].
 - **License**: Creative Commons Attribution 4.0 International (CC BY 4.0) [^cc_by_40].
@@ -82,7 +82,7 @@ In addition to classification, the system computes:
 
 ---
 
-## 🏆 4. Model Benchmark & Safety Evaluation
+## 4. Model Benchmark & Safety Evaluation
 
 Evaluated on the **untouched test split** ($N = 27$ worker crops) [^scikit_learn_eval]:
 
@@ -97,7 +97,7 @@ Evaluated on the **untouched test split** ($N = 27$ worker crops) [^scikit_learn
 
 ---
 
-## 🚀 5. Quickstart & Installation
+## 5. Quickstart & Installation
 
 ### Option A: Local Virtual Environment
 ```bash
@@ -127,7 +127,7 @@ pytest tests/unit tests/integration -v
 
 ---
 
-## 🌐 6. FastAPI Microservice
+## 6. FastAPI Microservice
 
 Start the production REST API:
 ```bash
@@ -169,7 +169,7 @@ curl -X POST "http://localhost:8000/predict" \
 
 ---
 
-## 🎨 7. Interactive Gradio Web Demo
+## 7. Interactive Gradio Web Demo
 
 Launch the local interactive Gradio screening dashboard:
 ```bash
@@ -179,7 +179,7 @@ Open [http://localhost:7860](http://localhost:7860) in your browser.
 
 ---
 
-## 🐳 8. Production Docker Container
+## 8. Production Docker Container
 
 Build and execute the secured, non-root OCI container [^fastapi_docker, ^docker_security]:
 ```bash
@@ -195,7 +195,7 @@ curl http://localhost:8000/health
 
 ---
 
-## 🛡️ 9. CI/CD & Automated Quality Gates
+## 9. CI/CD & Automated Quality Gates
 
 GitHub Actions workflow (`.github/workflows/ci.yml`):
 1. **Linting & Code Quality**: Ruff and Flake8 syntax checks.
@@ -206,7 +206,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 
 ---
 
-## 📚 10. Complete Documentation Index
+## 10. Complete Documentation Index
 
 - [System Architecture](docs/ARCHITECTURE.md)
 - [Data Card & Governance](docs/DATA_CARD.md)
@@ -219,7 +219,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 
 ---
 
-## 📖 11. Official References & Citations
+## 11. Official References & Citations
 
 [^roboflow_source]: Roboflow Universe Construction PPE Detection Dataset (CC BY 4.0). URL: [https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0](https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0)
 [^cc_by_40]: Creative Commons Attribution 4.0 International License (CC BY 4.0). URL: [https://creativecommons.org/licenses/by/4.0/](https://creativecommons.org/licenses/by/4.0/)

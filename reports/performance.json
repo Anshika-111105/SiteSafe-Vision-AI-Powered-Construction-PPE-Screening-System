@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-09-12T07:19:03.859476+00:00",
+  "timestamp_utc": "2026-09-13T20:41:20.040189+00:00",
   "hardware": {
     "device": "CPU",
     "threads": 4
@@ -10,20 +10,20 @@
       "model_file_size_mb": 90.0,
       "total_parameters": 23514179,
       "trainable_parameters": 23514179,
-      "load_time_ms": 544.22,
+      "load_time_ms": 868.39,
       "single_image_latency_ms": {
-        "mean": 105.0,
-        "median": 99.94,
-        "p95": 141.1,
-        "p99": 157.46,
-        "min": 83.52,
-        "max": 164.77
+        "mean": 178.22,
+        "median": 171.07,
+        "p95": 229.28,
+        "p99": 306.48,
+        "min": 149.9,
+        "max": 355.06
       },
       "throughput_images_per_second": {
-        "batch_size_1": 11.39,
-        "batch_size_4": 11.51,
-        "batch_size_8": 10.12,
-        "batch_size_16": 9.44
+        "batch_size_1": 5.32,
+        "batch_size_4": 6.91,
+        "batch_size_8": 6.62,
+        "batch_size_16": 6.59
       }
     },
     "mobilenet_v3_large": {
@@ -31,25 +31,25 @@
       "model_file_size_mb": 16.24,
       "total_parameters": 4205875,
       "trainable_parameters": 4205875,
-      "load_time_ms": 171.21,
+      "load_time_ms": 323.12,
       "single_image_latency_ms": {
-        "mean": 21.84,
-        "median": 20.93,
-        "p95": 29.08,
-        "p99": 30.53,
-        "min": 16.14,
-        "max": 30.58
+        "mean": 36.92,
+        "median": 36.19,
+        "p95": 41.65,
+        "p99": 46.68,
+        "min": 32.7,
+        "max": 51.08
       },
       "throughput_images_per_second": {
-        "batch_size_1": 50.34,
-        "batch_size_4": 56.07,
-        "batch_size_8": 49.08,
-        "batch_size_16": 34.89
+        "batch_size_1": 27.2,
+        "batch_size_4": 31.51,
+        "batch_size_8": 31.81,
+        "batch_size_16": 28.08
       }
     }
   },
   "comparison_summary": {
-    "latency_speedup_mobilenet_vs_resnet": 4.81,
+    "latency_speedup_mobilenet_vs_resnet": 4.83,
     "model_size_reduction_ratio": 5.54
   }
 }
