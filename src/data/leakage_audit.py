@@ -3,9 +3,9 @@ import csv
 import json
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Any
+from typing import Any
 
 import numpy as np
 
@@ -13,8 +13,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.seed import set_seed
 from src.utils.logger import setup_logger
+from src.utils.seed import set_seed
 
 logger = setup_logger("leakage_audit")
 
@@ -31,7 +31,7 @@ def run_leakage_audit_and_split(
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     set_seed(seed)
 
     if manifest_path is None:
@@ -72,8 +72,6 @@ def run_leakage_audit_and_split(
     n_groups = len(unique_source_ids)
     n_train = int(np.round(n_groups * train_ratio))
     n_val = int(np.round(n_groups * val_ratio))
-    # Test gets remainder to ensure 100% coverage
-    n_test = n_groups - (n_train + n_val)
 
     train_groups = set(unique_source_ids[:n_train])
     val_groups = set(unique_source_ids[n_train : n_train + n_val])
@@ -160,7 +158,7 @@ def run_leakage_audit_and_split(
 
     leakage_passed = len(leakage_violations) == 0
 
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     leakage_report = {
         "timestamp_utc": now_iso,
         "leakage_gate_passed": leakage_passed,
@@ -215,7 +213,7 @@ def run_leakage_audit_and_split(
         f.write("# SiteSafe Vision: Data Leakage & Split Audit Report\n\n")
         f.write(f"- **Audit Status**: `{'PASSED' if leakage_passed else 'FAILED'}`\n")
         f.write(f"- **Audit Timestamp (UTC)**: `{now_iso}`\n")
-        f.write(f"- **Grouping Strategy**: `group_by_source_image_id` (Crops from same scene strictly coupled)\n")
+        f.write("- **Grouping Strategy**: `group_by_source_image_id` (Crops from same scene strictly coupled)\n")
         f.write(f"- **Random Seed**: `{seed}`\n\n")
         f.write("## Split Summary\n\n")
         f.write("| Split | Scene Groups | Worker Samples | FULL_PPE | PARTIAL_PPE | NO_PPE |\n")
@@ -231,11 +229,10 @@ def run_leakage_audit_and_split(
         f.write(f"- Train-Val Disjoint Source Images: `{'PASS' if not overlap_train_val else 'FAIL'}`\n")
         f.write(f"- Train-Test Disjoint Source Images: `{'PASS' if not overlap_train_test else 'FAIL'}`\n")
         f.write(f"- Val-Test Disjoint Source Images: `{'PASS' if not overlap_val_test else 'FAIL'}`\n")
-        f.write(f"- Cross-Split SHA-256 Hash Collisions: `0`\n\n")
+        f.write("- Cross-Split SHA-256 Hash Collisions: `0`\n\n")
         if leakage_violations:
             f.write("## ⚠️ Leakage Violations\n\n")
-            for v in leakage_violations:
-                f.write(f"- {v}\n")
+            f.writelines(f"- {v}\n" for v in leakage_violations)
         else:
             f.write("✅ **Zero cross-split data leakage detected. Strict scene grouping verified.**\n")
 

@@ -5,7 +5,7 @@ import os
 import platform
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -131,7 +131,7 @@ def generate_environment_report(project_root: Path = None) -> dict:
             model_version = "METADATA_UNREADABLE"
 
     report = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "project_name": "SiteSafe Vision",
         "system": {
             "os": platform.system(),

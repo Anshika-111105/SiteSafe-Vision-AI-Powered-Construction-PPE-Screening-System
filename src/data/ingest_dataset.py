@@ -3,9 +3,9 @@ import hashlib
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -15,8 +15,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.seed import set_seed
 from src.utils.logger import setup_logger
+from src.utils.seed import set_seed
 
 logger = setup_logger("data_ingest")
 
@@ -29,7 +29,7 @@ def compute_sha256(filepath: Path) -> str:
     return hasher.hexdigest()
 
 
-def generate_benchmark_raw_dataset(raw_dir: Path, num_scenes: int = 120) -> Dict[str, Any]:
+def generate_benchmark_raw_dataset(raw_dir: Path, num_scenes: int = 120) -> dict[str, Any]:
     """
     Generates a deterministic raw object-detection dataset mirroring the exact schema
     of Roboflow Construction PPE Detection Dataset (human, helmet, vest, boots, gloves).
@@ -89,9 +89,8 @@ def generate_benchmark_raw_dataset(raw_dir: Path, num_scenes: int = 120) -> Dict
             # Worker bounding box (x, y, w, h)
             w_width = rng.randint(90, 160)
             w_height = rng.randint(220, 360)
-            
+
             # Position workers safely separated
-            max_x = max(10, img_w - w_width - 10)
             min_x_slice = int(w_idx * (img_w / num_workers))
             max_x_slice = int((w_idx + 1) * (img_w / num_workers) - w_width)
             w_x = rng.randint(max(10, min_x_slice), max(min_x_slice + 1, max_x_slice))
@@ -217,7 +216,7 @@ def generate_benchmark_raw_dataset(raw_dir: Path, num_scenes: int = 120) -> Dict
         "dataset_name": "Construction PPE Detection Dataset",
         "source_url": "https://universe.roboflow.com/new-project-ds9wg/construction-ppe-detection-vqbc0",
         "dataset_version": "1.0.0",
-        "download_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "download_timestamp_utc": datetime.now(UTC).isoformat(),
         "license": "CC BY 4.0",
         "license_url": "https://creativecommons.org/licenses/by/4.0/",
         "source_class_names": source_classes,
@@ -246,7 +245,7 @@ def generate_benchmark_raw_dataset(raw_dir: Path, num_scenes: int = 120) -> Dict
     return metadata
 
 
-def ingest_dataset(raw_dir: Path = None) -> Dict[str, Any]:
+def ingest_dataset(raw_dir: Path = None) -> dict[str, Any]:
     if raw_dir is None:
         raw_dir = PROJECT_ROOT / "data" / "raw"
     raw_dir.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
-from src.features.transforms import get_train_transforms, get_eval_transforms
+
+from src.features.transforms import get_eval_transforms
 
 
 def test_eval_transforms_output_shape():

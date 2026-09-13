@@ -1,19 +1,20 @@
-from typing import Dict, List, Any
+from typing import Any
+
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
-    confusion_matrix,
 )
 
 
 def compute_classification_metrics(
-    y_true: List[int],
-    y_pred: List[int],
-    class_names: List[str] = ["FULL_PPE", "PARTIAL_PPE", "NO_PPE"],
-) -> Dict[str, Any]:
+    y_true: list[int],
+    y_pred: list[int],
+    class_names: list[str] = ["FULL_PPE", "PARTIAL_PPE", "NO_PPE"],
+) -> dict[str, Any]:
     """
     Computes comprehensive multi-class metrics including safety-critical false negative rates.
     """

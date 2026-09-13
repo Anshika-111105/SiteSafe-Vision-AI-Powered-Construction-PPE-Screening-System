@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import hashlib
 import json
-import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -91,7 +89,7 @@ def generate_checksums_and_lineage(project_root: Path = None) -> bool:
     model_sha256 = file_hashes.get("artifacts/models/production_model.pt", "UNKNOWN")
 
     lineage = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "model_version": "1.0.0",
         "system_name": "SiteSafe Vision",
         "git_commit": get_git_commit(),

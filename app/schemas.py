@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -15,14 +16,14 @@ class PredictionResponse(BaseModel):
     recommendation: str = Field(..., description="Actionable safety guidance for site supervisors")
     model_version: str = Field(..., description="Semantic version of the serving model")
     request_id: str = Field(..., description="Unique UUID tracking the request lifecycle")
-    probabilities: Dict[str, float] = Field(..., description="Class probability distribution")
+    probabilities: dict[str, float] = Field(..., description="Class probability distribution")
     inference_latency_ms: float = Field(..., ge=0.0, description="Pure model inference duration in milliseconds")
 
 
 class BatchPredictionResponse(BaseModel):
     batch_request_id: str = Field(..., description="Unique UUID for batch request")
     total_images: int = Field(..., ge=1, description="Number of successfully processed images")
-    results: List[PredictionResponse] = Field(..., description="List of individual image prediction results")
+    results: list[PredictionResponse] = Field(..., description="List of individual image prediction results")
 
 
 class HealthResponse(BaseModel):
@@ -39,11 +40,11 @@ class MetadataResponse(BaseModel):
     architecture: str
     training_commit: str
     dataset_version: str
-    class_mapping: Dict[str, int]
+    class_mapping: dict[str, int]
     input_size: int
-    normalization: Dict[str, List[float]]
-    validation_metrics: Optional[Dict[str, Any]] = None
-    artifact_sha256: Optional[str] = None
+    normalization: dict[str, list[float]]
+    validation_metrics: dict[str, Any] | None = None
+    artifact_sha256: str | None = None
 
 
 class VersionResponse(BaseModel):

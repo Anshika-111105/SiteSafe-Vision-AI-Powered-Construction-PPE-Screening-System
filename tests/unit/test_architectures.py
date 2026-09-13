@@ -1,5 +1,10 @@
 import torch
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model, set_trainable_layers
+
+from src.models.architectures import (
+    create_mobilenet_v3_model,
+    create_resnet50_model,
+    set_trainable_layers,
+)
 
 
 def test_resnet50_forward_shape():
@@ -21,6 +26,7 @@ def test_layer_freezing_phases():
 
     # Phase 1: Only fc trainable
     t_p1 = set_trainable_layers(model, "resnet50", phase=1)
+    assert len(t_p1) > 0
     for name, param in model.named_parameters():
         if "fc" in name:
             assert param.requires_grad is True
@@ -29,6 +35,7 @@ def test_layer_freezing_phases():
 
     # Phase 2: layer4 + fc trainable
     t_p2 = set_trainable_layers(model, "resnet50", phase=2)
+    assert len(t_p2) > len(t_p1)
     for name, param in model.named_parameters():
         if "layer4" in name or "fc" in name:
             assert param.requires_grad is True

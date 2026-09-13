@@ -1,10 +1,9 @@
-from typing import Tuple, Dict
 
 
 def evaluate_risk_and_recommendation(
     prediction: str,
     confidence: float,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Computes risk level and standardized safety recommendation.
 

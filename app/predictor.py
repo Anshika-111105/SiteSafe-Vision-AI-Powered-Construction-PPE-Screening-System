@@ -1,23 +1,22 @@
 import json
-import os
 import sys
 import threading
 import time
 from pathlib import Path
-from typing import Dict, Tuple, Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
-import torch.nn as nn
 from PIL import Image
+from torch import nn
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.features.transforms import get_eval_transforms
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model
 from src.explainability.gradcam import GradCAM, overlay_heatmap
+from src.features.transforms import get_eval_transforms
+from src.models.architectures import create_mobilenet_v3_model, create_resnet50_model
 from src.utils.logger import setup_logger
 
 logger = setup_logger("predictor")
@@ -26,9 +25,9 @@ logger = setup_logger("predictor")
 class PPEPredictor:
     def __init__(
         self,
-        model_path: Optional[Path] = None,
-        metadata_path: Optional[Path] = None,
-        device: Optional[str] = None,
+        model_path: Path | None = None,
+        metadata_path: Path | None = None,
+        device: str | None = None,
     ):
         if model_path is None:
             model_path = PROJECT_ROOT / "artifacts" / "models" / "production_model.pt"
@@ -43,13 +42,13 @@ class PPEPredictor:
         else:
             self.device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model: Optional[nn.Module] = None
-        self.target_layer: Optional[nn.Module] = None
-        self.gradcam: Optional[GradCAM] = None
+        self.model: nn.Module | None = None
+        self.target_layer: nn.Module | None = None
+        self.gradcam: GradCAM | None = None
         self.model_name: str = "mobilenet_v3_large"
-        self.metadata: Dict[str, Any] = {}
-        self.idx_to_class: Dict[int, str] = {0: "FULL_PPE", 1: "PARTIAL_PPE", 2: "NO_PPE"}
-        self.class_to_idx: Dict[str, int] = {"FULL_PPE": 0, "PARTIAL_PPE": 1, "NO_PPE": 2}
+        self.metadata: dict[str, Any] = {}
+        self.idx_to_class: dict[int, str] = {0: "FULL_PPE", 1: "PARTIAL_PPE", 2: "NO_PPE"}
+        self.class_to_idx: dict[str, int] = {"FULL_PPE": 0, "PARTIAL_PPE": 1, "NO_PPE": 2}
         self.transforms = get_eval_transforms(image_size=224, resize_size=256)
         self._gradcam_lock: threading.Lock = threading.Lock()
 
@@ -113,7 +112,7 @@ class PPEPredictor:
     def is_loaded(self) -> bool:
         return self.model is not None
 
-    def predict(self, image: Image.Image) -> Dict[str, Any]:
+    def predict(self, image: Image.Image) -> dict[str, Any]:
         """
         Runs inference on a PIL Image and returns prediction details.
         """
@@ -149,7 +148,7 @@ class PPEPredictor:
             "model_name": self.model_name,
         }
 
-    def predict_with_gradcam(self, image: Image.Image) -> Tuple[Dict[str, Any], Image.Image]:
+    def predict_with_gradcam(self, image: Image.Image) -> tuple[dict[str, Any], Image.Image]:
         """
         Runs inference and generates a Grad-CAM overlay PIL Image with thread-safe backward locking.
         """
@@ -194,7 +193,7 @@ class PPEPredictor:
 
 
 # Global singleton instance
-_predictor_instance: Optional[PPEPredictor] = None
+_predictor_instance: PPEPredictor | None = None
 
 
 def get_predictor() -> PPEPredictor:

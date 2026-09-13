@@ -1,6 +1,4 @@
-from typing import Tuple, List
-import torch
-import torch.nn as nn
+from torch import nn
 from torchvision import models
 
 
@@ -31,7 +29,7 @@ def create_mobilenet_v3_model(num_classes: int = 3, pretrained: bool = True) -> 
     return model
 
 
-def set_trainable_layers(model: nn.Module, model_type: str, phase: int = 1) -> List[str]:
+def set_trainable_layers(model: nn.Module, model_type: str, phase: int = 1) -> list[str]:
     """
     Configures trainable parameters for Phase 1 (feature extraction) vs Phase 2 (fine-tuning).
     Returns the list of trainable parameter layer names.

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import json
-import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 import numpy as np
 import torch
@@ -15,14 +14,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model
 from src.features.transforms import get_eval_transforms
+from src.models.architectures import create_mobilenet_v3_model, create_resnet50_model
 from src.utils.logger import setup_logger
 
 logger = setup_logger("benchmark")
 
 
-def benchmark_model_architecture(model_name: str, num_runs: int = 50) -> Dict[str, Any]:
+def benchmark_model_architecture(model_name: str, num_runs: int = 50) -> dict[str, Any]:
     eval_tf = get_eval_transforms(224, 256)
     dummy_img = Image.new("RGB", (300, 300), color=(120, 140, 160))
     input_tensor = eval_tf(dummy_img).unsqueeze(0)
@@ -91,14 +90,14 @@ def benchmark_model_architecture(model_name: str, num_runs: int = 50) -> Dict[st
     }
 
 
-def run_full_benchmark() -> Dict[str, Any]:
+def run_full_benchmark() -> dict[str, Any]:
     logger.info("Executing Performance Benchmark on ResNet50 and MobileNetV3-Large...")
 
     resnet_bench = benchmark_model_architecture("resnet50")
     mobilenet_bench = benchmark_model_architecture("mobilenet_v3_large")
 
     benchmark_report = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "hardware": {
             "device": "CPU",
             "threads": torch.get_num_threads(),

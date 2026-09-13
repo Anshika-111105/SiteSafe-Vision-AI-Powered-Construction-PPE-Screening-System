@@ -1,5 +1,6 @@
 import os
 import random
+
 import numpy as np
 import torch
 
@@ -23,7 +24,7 @@ def set_seed(seed: int = 42) -> None:
 
     try:
         torch.use_deterministic_algorithms(True)
-    except Exception as e:
+    except Exception:
         # Documented PyTorch behavior: some CUDA/CPU kernels lack deterministic implementations
         pass
 

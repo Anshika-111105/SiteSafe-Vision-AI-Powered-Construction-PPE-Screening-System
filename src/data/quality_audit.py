@@ -1,11 +1,10 @@
 import csv
 import hashlib
 import json
-import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
+from typing import Any
 
 import numpy as np
 from PIL import Image
@@ -41,7 +40,7 @@ def run_quality_audit(
     raw_dir: Path = None,
     interim_dir: Path = None,
     reports_dir: Path = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if raw_dir is None:
         raw_dir = PROJECT_ROOT / "data" / "raw"
     if interim_dir is None:
@@ -58,7 +57,7 @@ def run_quality_audit(
     target_classes = {"FULL_PPE", "PARTIAL_PPE", "NO_PPE"}
     issues_found = []
     manifest_rows = []
-    
+
     class_counts = {c: 0 for c in target_classes}
     total_crops_inspected = 0
     blank_images_count = 0
@@ -66,7 +65,7 @@ def run_quality_audit(
     extreme_aspect_ratio_count = 0
     invalid_dimensions_count = 0
     duplicate_sha256_count = 0
-    
+
     seen_hashes = {}
 
     if not label_audit_path.exists():
@@ -81,7 +80,7 @@ def run_quality_audit(
         for r in reader:
             audit_rows.append(r)
 
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
 
     for row in audit_rows:
         derived_label = row["derived_label"]
@@ -114,7 +113,7 @@ def run_quality_audit(
                 phash_val = compute_phash(img)
         except Exception as e:
             corrupt_images_count += 1
-            issues_found.append(f"Corrupt image {crop_id}: {str(e)}")
+            issues_found.append(f"Corrupt image {crop_id}: {e!s}")
             continue
 
         # Check dimension validity
@@ -212,8 +211,7 @@ def run_quality_audit(
         f.write(f"- Exact Duplicates (SHA-256): `{duplicate_sha256_count}`\n\n")
         if issues_found:
             f.write("## Quality Violations Logged\n\n")
-            for issue in issues_found[:20]:
-                f.write(f"- ⚠️ {issue}\n")
+            f.writelines(f"- ⚠️ {issue}\n" for issue in issues_found[:20])
         else:
             f.write("✅ **Zero quality gate violations detected.**\n")
 

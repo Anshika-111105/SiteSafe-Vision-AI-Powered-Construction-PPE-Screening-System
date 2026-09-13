@@ -1,14 +1,15 @@
 import time
 import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
+from starlette.responses import JSONResponse
 
 from src.utils.logger import setup_logger
 
 logger = setup_logger("api_middleware")
 
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024 # 10 MB
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 class RequestTrackingMiddleware(BaseHTTPMiddleware):

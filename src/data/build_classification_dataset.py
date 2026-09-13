@@ -3,9 +3,7 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
 
-import numpy as np
 from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -17,10 +15,10 @@ from src.utils.logger import setup_logger
 logger = setup_logger("build_classification_dataset")
 
 TRANSFORMATION_VERSION = "1.0.0"
-MIN_WORKER_SIZE = 32 # Minimum width/height in px
+MIN_WORKER_SIZE = 32  # Minimum width/height in px
 
 
-def calculate_containment(child_box: List[int], parent_box: List[int]) -> bool:
+def calculate_containment(child_box: list[int], parent_box: list[int]) -> bool:
     """
     Checks if the center of child_box lies within parent_box.
     Boxes are in [x, y, w, h] format.
@@ -32,7 +30,7 @@ def calculate_containment(child_box: List[int], parent_box: List[int]) -> bool:
     return (px <= cx <= px + pw) and (py <= cy <= py + ph)
 
 
-def is_in_relative_band(child_box: List[int], parent_box: List[int], min_rel_y: float, max_rel_y: float) -> bool:
+def is_in_relative_band(child_box: list[int], parent_box: list[int], min_rel_y: float, max_rel_y: float) -> bool:
     """
     Checks if child_box center falls within a specific relative vertical band of parent_box.
     """

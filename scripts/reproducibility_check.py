@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import hashlib
 import json
-import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -27,7 +26,7 @@ def compute_file_sha256(filepath: Path) -> str:
     return hasher.hexdigest()
 
 
-def run_reproducibility_audit() -> Dict[str, Any]:
+def run_reproducibility_audit() -> dict[str, Any]:
     logger.info("Executing Complete End-to-End Reproducibility Audit...")
 
     checks = {}
@@ -129,7 +128,7 @@ def run_reproducibility_audit() -> Dict[str, Any]:
     }
 
     report = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "overall_reproducibility_passed": all_passed and checksum_verified,
         "checks": checks,
         "reproducibility_boundary": reproducibility_boundary,

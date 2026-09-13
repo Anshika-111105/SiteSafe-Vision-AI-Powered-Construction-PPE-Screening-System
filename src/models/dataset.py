@@ -1,6 +1,7 @@
 import csv
+from collections.abc import Callable
 from pathlib import Path
-from typing import List, Tuple, Callable, Optional, Dict
+
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -17,12 +18,12 @@ class PPEDataset(Dataset):
         split_manifest_path: Path,
         crops_dir: Path,
         split: str = "train",
-        transform: Optional[Callable] = None,
+        transform: Callable | None = None,
     ):
         self.split = split
         self.crops_dir = crops_dir
         self.transform = transform
-        self.samples: List[Dict[str, str]] = []
+        self.samples: list[dict[str, str]] = []
 
         if not split_manifest_path.exists():
             raise FileNotFoundError(f"Split manifest not found: {split_manifest_path}")
@@ -39,7 +40,7 @@ class PPEDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int) -> Tuple[any, int, str]:
+    def __getitem__(self, idx: int) -> tuple[any, int, str]:
         item = self.samples[idx]
         sample_id = item["sample_id"]
         class_name = item["class"]

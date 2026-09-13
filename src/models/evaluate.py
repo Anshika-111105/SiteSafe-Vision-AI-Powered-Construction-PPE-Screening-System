@@ -3,26 +3,24 @@ import json
 import shutil
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
-import numpy as np
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
 import yaml
+from torch import nn
+from torch.utils.data import DataLoader
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.seed import set_seed
+from src.features.transforms import get_eval_transforms
+from src.models.architectures import create_mobilenet_v3_model, create_resnet50_model
+from src.models.dataset import PPEDataset
 from src.utils.logger import setup_logger
 from src.utils.metrics import compute_classification_metrics
-from src.features.transforms import get_eval_transforms
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model
-from src.models.dataset import PPEDataset
 
 logger = setup_logger("evaluate")
 
@@ -44,7 +42,7 @@ def load_model_from_checkpoint(checkpoint_path: Path, model_name: str, num_class
 def select_best_model(
     artifacts_dir: Path,
     selection_config_path: Path,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Applies formal model selection rules using validation metrics only.
     """
@@ -112,7 +110,7 @@ def select_best_model(
     shutil.copy2(champion_meta, meta_dest)
 
     selection_summary = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "champion_model": champion_name,
         "champion_score": round(best_score, 4),
         "decision_rationale": selection_cfg["rationale"],
@@ -130,7 +128,7 @@ def evaluate_test_set(
     config_path: Path = None,
     artifacts_dir: Path = None,
     reports_dir: Path = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if config_path is None:
         config_path = PROJECT_ROOT / "configs" / "config.yaml"
     if artifacts_dir is None:
@@ -220,7 +218,7 @@ def evaluate_test_set(
 
     # Save Final Evaluation JSON
     eval_summary = {
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "model_name": champion_name,
         "evaluation_split": "test",
         "total_test_samples": len(test_dataset),
@@ -237,7 +235,7 @@ def evaluate_test_set(
     with open(eval_md_path, "w", encoding="utf-8") as f:
         f.write("# SiteSafe Vision: Model Evaluation & Benchmark Report\n\n")
         f.write(f"- **Champion Model**: `{champion_name}`\n")
-        f.write(f"- **Evaluation Split**: `test` (Untouched during training and selection)\n")
+        f.write("- **Evaluation Split**: `test` (Untouched during training and selection)\n")
         f.write(f"- **Test Set Size**: `{len(test_dataset)}` worker crops\n")
         f.write(f"- **Single Image Latency**: `{latency_per_sample_ms:.2f} ms`\n\n")
         f.write("## Overall Performance\n\n")
@@ -253,15 +251,13 @@ def evaluate_test_set(
         f.write("## Per-Class Breakdown\n\n")
         f.write("| Class | Precision | Recall | F1 Score | Support |\n")
         f.write("| :--- | :--- | :--- | :--- | :--- |\n")
-        for cls_name, pstats in metrics["per_class"].items():
-            f.write(f"| `{cls_name}` | {pstats['precision']:.4f} | {pstats['recall']:.4f} | {pstats['f1']:.4f} | {pstats['support']} |\n")
+        f.writelines(f"| `{cls_name}` | {pstats['precision']:.4f} | {pstats['recall']:.4f} | {pstats['f1']:.4f} | {pstats['support']} |\n" for cls_name, pstats in metrics["per_class"].items())
         f.write("\n## Confusion Matrix\n\n")
         f.write("Rows = Ground Truth, Columns = Prediction (`[FULL_PPE, PARTIAL_PPE, NO_PPE]`)\n\n")
         f.write("```\n")
-        for r in metrics["confusion_matrix"]:
-            f.write(f"{r}\n")
+        f.writelines(f"{r}\n" for r in metrics["confusion_matrix"])
         f.write("```\n\n")
-        f.write(f"## Error Analysis Summary\n\n")
+        f.write("## Error Analysis Summary\n\n")
         f.write(f"- **Total Misclassified Samples**: `{len(misclassified_rows)}`\n")
         f.write(f"- Detailed error trace saved to [`reports/misclassified_samples.csv`](file:///{misclassified_csv_path.as_posix()})\n")
 

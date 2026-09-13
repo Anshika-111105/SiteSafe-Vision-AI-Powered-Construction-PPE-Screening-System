@@ -1,4 +1,3 @@
-from typing import Tuple
 from torchvision import transforms
 
 # Standard ImageNet normalization parameters

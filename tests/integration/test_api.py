@@ -1,8 +1,11 @@
-import io
-import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
-from tests.fixtures.create_fixtures import generate_test_image, generate_corrupt_image, generate_empty_image
+from tests.fixtures.create_fixtures import (
+    generate_corrupt_image,
+    generate_empty_image,
+    generate_test_image,
+)
 
 client = TestClient(app)
 

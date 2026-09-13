@@ -1,13 +1,10 @@
 import io
-import os
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import List
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
@@ -15,22 +12,22 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from app.middleware import RequestTrackingMiddleware
+from app.predictor import get_predictor
+from app.risk import evaluate_risk_and_recommendation
 from app.schemas import (
-    PredictionResponse,
     BatchPredictionResponse,
     HealthResponse,
     MetadataResponse,
+    PredictionResponse,
     VersionResponse,
 )
-from app.risk import evaluate_risk_and_recommendation
-from app.predictor import get_predictor
-from app.middleware import RequestTrackingMiddleware
 from src.utils.logger import setup_logger
 
 logger = setup_logger("api_main")
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
-MAX_FILE_BYTES = 10 * 1024 * 1024 # 10 MB
+MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 app = FastAPI(
     title="SiteSafe Vision API",
@@ -87,7 +84,7 @@ async def health_check():
         model_loaded=predictor.is_loaded,
         model_name=getattr(predictor, "model_name", "UNKNOWN"),
         version="1.0.0",
-        timestamp_utc=datetime.now(timezone.utc).isoformat(),
+        timestamp_utc=datetime.now(UTC).isoformat(),
     )
 
 
@@ -151,7 +148,7 @@ def validate_and_open_image(file_bytes: bytes, filename: str, content_type: str)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Corrupted or unreadable image file: {str(e)}",
+            detail=f"Corrupted or unreadable image file: {e!s}",
         )
 
     w, h = img.size
@@ -202,7 +199,7 @@ async def predict_single(
 @app.post("/predict/batch", response_model=BatchPredictionResponse, tags=["Inference"])
 async def predict_batch(
     request: Request,
-    files: List[UploadFile] = File(..., description="List of worker crop image files"),
+    files: list[UploadFile] = File(..., description="List of worker crop image files"),
 ):
     batch_req_id = getattr(request.state, "request_id", str(uuid.uuid4()))
     predictor = get_predictor()

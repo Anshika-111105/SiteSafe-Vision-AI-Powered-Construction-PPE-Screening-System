@@ -2,29 +2,32 @@ import argparse
 import copy
 import hashlib
 import json
-import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
 import yaml
+from torch import nn
+from torch.utils.data import DataLoader
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.seed import set_seed, seed_worker
+from src.features.transforms import get_eval_transforms, get_train_transforms
+from src.models.architectures import (
+    create_mobilenet_v3_model,
+    create_resnet50_model,
+    set_trainable_layers,
+)
+from src.models.dataset import PPEDataset
 from src.utils.logger import setup_logger
 from src.utils.metrics import compute_classification_metrics
-from src.features.transforms import get_train_transforms, get_eval_transforms
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model, set_trainable_layers
-from src.models.dataset import PPEDataset
+from src.utils.seed import seed_worker, set_seed
 
 logger = setup_logger("train")
 
@@ -57,7 +60,7 @@ def train_one_epoch(
     criterion: nn.Module,
     optimizer: torch.optim.Optimizer,
     device: torch.device,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     model.train()
     running_loss = 0.0
     all_preds = []
@@ -92,7 +95,7 @@ def evaluate(
     dataloader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     model.eval()
     running_loss = 0.0
     all_preds = []
@@ -121,7 +124,7 @@ def train_model(
     model_name: str = "resnet50",
     config_path: Path = None,
     output_dir: Path = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if config_path is None:
         config_path = PROJECT_ROOT / "configs" / "config.yaml"
     if output_dir is None:
@@ -320,7 +323,7 @@ def train_model(
         "dataset_version": "1.0.0",
         "config_hash": cfg_hash,
         "random_seed": seed,
-        "training_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "training_timestamp_utc": datetime.now(UTC).isoformat(),
         "python_version": sys.version,
         "pytorch_version": torch.__version__,
         "class_mapping": config["data"]["class_to_idx"],

@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
-from app.schemas import PredictionResponse, HealthResponse, MetadataResponse, VersionResponse
+
+from app.schemas import HealthResponse, PredictionResponse
 
 
 def test_prediction_response_schema_valid():
@@ -23,7 +24,7 @@ def test_prediction_response_confidence_bounds():
     with pytest.raises(ValidationError):
         PredictionResponse(
             prediction="FULL_PPE",
-            confidence=1.5, # Invalid > 1.0
+            confidence=1.5,  # Invalid > 1.0
             risk_level="LOW",
             recommendation="Test",
             model_version="1.0.0",

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -18,7 +17,7 @@ CITATION_PATTERN = re.compile(r"\[(\^?\d+|[a-zA-Z0-9_-]+)\]:\s*(https?://[^\s]+)
 INLINE_LINK_PATTERN = re.compile(r"\[([^\]]+)\]\((https?://[^\)]+)\)")
 
 
-def audit_markdown_file(file_path: Path) -> Dict[str, Any]:
+def audit_markdown_file(file_path: Path) -> dict[str, Any]:
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -35,11 +34,11 @@ def audit_markdown_file(file_path: Path) -> Dict[str, Any]:
         "total_lines": len(lines),
         "total_citations_found": total_citations,
         "has_references_section": has_references_section,
-        "citations": [c[1] for c in citations] + [l[1] for l in inline_links],
+        "citations": [c[1] for c in citations] + [link[1] for link in inline_links],
     }
 
 
-def run_citation_audit() -> Dict[str, Any]:
+def run_citation_audit() -> dict[str, Any]:
     logger.info("Executing Formal Citation Audit across Documentation...")
     docs_dir = PROJECT_ROOT / "docs"
     reports_dir = PROJECT_ROOT / "reports"
@@ -61,7 +60,7 @@ def run_citation_audit() -> Dict[str, Any]:
         if res["total_citations_found"] == 0 and doc_file.name != "LIMITATIONS.md":
             all_cited = False
 
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
 
     # Generate Markdown Report
     report_md_path = reports_dir / "citation_audit.md"

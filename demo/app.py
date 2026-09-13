@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from typing import Dict, Tuple, Any
 
 import gradio as gr
 from PIL import Image
@@ -52,7 +51,7 @@ def predict_ppe_image(input_image: Image.Image, show_gradcam: bool = True):
             probabilities,
         )
     except Exception as e:
-        return None, "ERROR", "0.0%", "HIGH", f"Prediction Error: {str(e)}", {}, None
+        return None, "ERROR", "0.0%", "HIGH", f"Prediction Error: {e!s}", {}, None
 
 
 # Gather sample examples from interim crops
@@ -109,4 +108,3 @@ with gr.Blocks(title="SiteSafe Vision | PPE Screening System") as demo:
 
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=7860, share=False, theme=gr.themes.Soft(), css=custom_css)
-

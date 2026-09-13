@@ -1,21 +1,19 @@
-import os
 import sys
 from pathlib import Path
-from typing import Tuple, Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
+from matplotlib import cm
 from PIL import Image
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+from torch import nn
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.features.transforms import get_eval_transforms
-from src.models.architectures import create_resnet50_model, create_mobilenet_v3_model
+from src.models.architectures import create_mobilenet_v3_model, create_resnet50_model
 from src.utils.logger import setup_logger
 
 logger = setup_logger("gradcam")
@@ -39,7 +37,7 @@ class GradCAM:
         self.target_layer.register_forward_hook(forward_hook)
         self.target_layer.register_full_backward_hook(backward_hook)
 
-    def generate_heatmap(self, input_tensor: torch.Tensor, class_idx: Optional[int] = None) -> np.ndarray:
+    def generate_heatmap(self, input_tensor: torch.Tensor, class_idx: int | None = None) -> np.ndarray:
         self.model.eval()
         self.model.zero_grad()
 
@@ -59,7 +57,7 @@ class GradCAM:
             activations[i, :, :] *= pooled_gradients[i]
 
         heatmap = torch.mean(activations, dim=0).cpu().numpy()
-        heatmap = np.maximum(heatmap, 0) # ReLU
+        heatmap = np.maximum(heatmap, 0)  # ReLU
         max_val = np.max(heatmap)
         if max_val > 0:
             heatmap /= max_val
@@ -79,7 +77,7 @@ def overlay_heatmap(image: Image.Image, heatmap: np.ndarray, alpha: float = 0.45
         colormap = plt.get_cmap(colormap_name)
     except Exception:
         colormap = cm.get_cmap(colormap_name)
-    heatmap_colored = colormap(heatmap_norm)[:, :, :3] # RGB
+    heatmap_colored = colormap(heatmap_norm)[:, :, :3]  # RGB
     heatmap_colored = np.uint8(255 * heatmap_colored)
 
     orig_arr = np.array(image.convert("RGB"))
