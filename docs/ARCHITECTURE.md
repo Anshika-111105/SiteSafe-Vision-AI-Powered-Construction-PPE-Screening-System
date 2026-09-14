@@ -13,6 +13,8 @@ In addition to discrete predictions, the system produces calibrated confidence i
 
 ## 2. End-to-End System Architecture
 
+![SiteSafe Vision Architecture Workflow](Architecture%20workflow.png)
+
 ```mermaid
 flowchart TD
     subgraph Data Ingestion & Governance
