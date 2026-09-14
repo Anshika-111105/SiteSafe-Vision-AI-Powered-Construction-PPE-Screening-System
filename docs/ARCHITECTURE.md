@@ -15,33 +15,7 @@ In addition to discrete predictions, the system produces calibrated confidence i
 
 ![SiteSafe Vision Architecture Workflow](Architecture%20workflow.png)
 
-```mermaid
-flowchart TD
-    subgraph Data Ingestion & Governance
-        A[Roboflow Universe Source<br/>CC BY 4.0] --> B[Raw Data Ingestion<br/>src/data/ingest_dataset.py]
-        B --> C[(Raw Images & BBox Annotations)]
-        C --> D[Label Derivation & Worker Cropping<br/>src/data/build_classification_dataset.py]
-        D --> E[Data Quality Gate<br/>src/data/quality_audit.py]
-        E --> F[Leakage Audit & Grouped Split<br/>src/data/leakage_audit.py]
-    end
 
-    subgraph MLOps Pipeline & DVC
-        F --> G[dvc.yaml 10-Stage Pipeline]
-        G --> H[Transfer Learning Engine<br/>ResNet50 & MobileNetV3]
-        H --> I[Validation Selection Gate<br/>configs/model_selection.yaml]
-        I --> J[Untouched Test Evaluation<br/>src/models/evaluate.py]
-        J --> K[Grad-CAM Explainability<br/>src/explainability/gradcam.py]
-        K --> L[Artifact Integrity & Lineage<br/>reports/lineage.json]
-    end
-
-    subgraph Serving & Microservices
-        L --> M[Production Model Package<br/>artifacts/models/production_model.pt]
-        M --> N[FastAPI REST Service<br/>app/main.py]
-        M --> O[Gradio Web UI<br/>demo/app.py]
-        N --> P[Docker Container<br/>Non-Root / Healthcheck]
-        P --> Q[Hugging Face Spaces / Cloud Deploy]
-    end
-```
 
 ---
 
