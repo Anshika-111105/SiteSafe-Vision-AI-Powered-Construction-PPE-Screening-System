@@ -7,7 +7,7 @@ name = "sitesafe-vision"
 version = "1.0.0"
 description = "AI-Powered Construction PPE Compliance Screening System"
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 authors = [
     { name = "SiteSafe Vision Engineering Team", email = "engineering@sitesafe.vision" }
@@ -18,32 +18,34 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
 dependencies = [
-    "torch==2.13.0",
-    "torchvision==0.28.0",
-    "numpy==2.4.6",
-    "pandas==2.3.3",
-    "scikit-learn==1.9.0",
-    "pillow==12.2.0",
-    "scipy==1.17.1",
-    "pydantic==2.13.4",
-    "pydantic-settings==2.14.1",
-    "fastapi==0.135.3",
-    "uvicorn==0.49.0",
-    "python-multipart==0.0.32",
-    "gradio==6.27.0",
-    "pyyaml==6.0.3",
-    "dvc==3.67.1",
-    "tqdm==4.70.0",
-    "matplotlib==3.11.0",
-    "seaborn==0.13.2",
-    "requests==2.34.2",
-    "httpx>=0.28.0",
-    "python-dotenv==1.2.2",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "pillow>=10.0.0",
+    "scipy>=1.10.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "python-multipart>=0.0.6",
+    "gradio>=5.0.0",
+    "pyyaml>=6.0",
+    "dvc>=3.0.0",
+    "tqdm>=4.65.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "requests>=2.30.0",
+    "httpx>=0.24.0",
+    "python-dotenv>=1.0.0",
 ]
+
 
 [project.optional-dependencies]
 dev = [
