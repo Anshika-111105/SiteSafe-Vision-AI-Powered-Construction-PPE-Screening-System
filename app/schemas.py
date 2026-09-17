@@ -20,6 +20,11 @@ class PredictionResponse(BaseModel):
     inference_latency_ms: float = Field(..., ge=0.0, description="Pure model inference duration in milliseconds")
 
 
+class ExplainablePredictionResponse(PredictionResponse):
+    gradcam_base64: str | None = Field(None, description="Base64 PNG encoded Grad-CAM attention heatmap overlay")
+    explanation_type: str = Field("Grad-CAM (Visual Saliency Map)", description="Method used for visual feature attribution")
+
+
 class BatchPredictionResponse(BaseModel):
     batch_request_id: str = Field(..., description="Unique UUID for batch request")
     total_images: int = Field(..., ge=1, description="Number of successfully processed images")

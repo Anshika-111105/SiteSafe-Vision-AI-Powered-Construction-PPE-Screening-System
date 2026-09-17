@@ -1,6 +1,8 @@
+import base64
 import io
 import sys
 import uuid
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -19,6 +21,7 @@ from app.predictor import get_predictor
 from app.risk import evaluate_risk_and_recommendation
 from app.schemas import (
     BatchPredictionResponse,
+    ExplainablePredictionResponse,
     HealthResponse,
     MetadataResponse,
     PredictionResponse,
@@ -64,11 +67,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       align-items: center;
       padding: 2rem 1rem;
     }
-    .container { max-width: 960px; width: 100%; }
+    .container { max-width: 980px; width: 100%; }
     .header { text-align: center; margin-bottom: 2rem; }
     .header h1 { font-size: 2.25rem; font-weight: 800; letter-spacing: -0.025em; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
     .header p { color: var(--text-muted); font-size: 1rem; margin-top: 0.5rem; }
-    .nav-links { display: flex; justify-content: center; gap: 1rem; margin-top: 0.75rem; }
+    .nav-links { display: flex; justify-content: center; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap; }
     .nav-links a { color: var(--primary); text-decoration: none; font-size: 0.875rem; font-weight: 500; padding: 0.25rem 0.75rem; border-radius: 9999px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); transition: all 0.2s; }
     .nav-links a:hover { background: rgba(59,130,246,0.2); }
     .disclaimer { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fde68a; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.8125rem; margin-bottom: 1.5rem; line-height: 1.4; }
@@ -79,7 +82,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     .dropzone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: rgba(15, 23, 42, 0.4); position: relative; }
     .dropzone:hover { border-color: var(--primary); background: rgba(59,130,246,0.05); }
     .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .preview-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; margin-top: 1rem; display: none; }
+    .preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; margin-top: 1rem; display: none; }
     .btn { display: inline-block; width: 100%; padding: 0.75rem; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
     .btn:hover { background: #1d4ed8; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -98,6 +101,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease-out; }
     .rec-box { background: rgba(15, 23, 42, 0.6); border-left: 4px solid var(--primary); padding: 0.875rem; border-radius: 4px; font-size: 0.875rem; margin-top: 1rem; line-height: 1.5; }
     .loading { display: none; text-align: center; color: var(--primary); font-size: 0.875rem; margin-top: 1rem; }
+    .cam-box { margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; text-align: center; }
+    .cam-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -108,6 +113,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="nav-links">
         <a href="/docs" target="_blank">📖 Swagger API Docs</a>
         <a href="/health" target="_blank">🩺 Health Status</a>
+        <a href="/metadata" target="_blank">📊 Model Metadata</a>
         <a href="https://github.com/Anshika-111105/SiteSafe-Vision-AI-Powered-Construction-PPE-Screening-System" target="_blank">🐙 GitHub Repository</a>
       </div>
     </div>
@@ -125,7 +131,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <img id="preview" class="preview-img" alt="Preview">
         </div>
         <button id="submitBtn" class="btn" disabled>🔍 Screen Worker Image</button>
-        <div id="loading" class="loading">⚙️ Analyzing worker PPE compliance...</div>
+        <div id="loading" class="loading">⚙️ Analyzing worker PPE compliance & Grad-CAM visual saliency...</div>
       </div>
 
       <div class="card">
@@ -163,6 +169,12 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               <div class="bar-bg"><div class="bar-fill" id="bNone" style="background:#ef4444; width:0%;"></div></div>
             </div>
           </div>
+
+          <div class="cam-box" id="camBox" style="display: none;">
+            <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted);">Grad-CAM Visual Attention Saliency</div>
+            <img id="camOverlay" class="cam-img" alt="Grad-CAM Overlay">
+          </div>
+
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; text-align: right;" id="metaText"></div>
         </div>
       </div>
@@ -177,6 +189,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     const loading = document.getElementById('loading');
     const resultsPanel = document.getElementById('resultsPanel');
     const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+    const camBox = document.getElementById('camBox');
+    const camOverlay = document.getElementById('camOverlay');
 
     let selectedFile = null;
 
@@ -204,7 +218,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       formData.append('file', selectedFile);
 
       try {
-        const resp = await fetch('/predict', { method: 'POST', body: formData });
+        const resp = await fetch('/predict/explain', { method: 'POST', body: formData });
         const data = await resp.json();
         loading.style.display = 'none';
         submitBtn.disabled = false;
@@ -237,6 +251,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           document.getElementById('pNone').textContent = none.toFixed(1) + '%';
           document.getElementById('bNone').style.width = none + '%';
 
+          if (data.gradcam_base64) {
+            camOverlay.src = data.gradcam_base64;
+            camBox.style.display = 'block';
+          } else {
+            camBox.style.display = 'none';
+          }
+
           document.getElementById('metaText').textContent = 'Model: ' + (data.model_name || 'mobilenet_v3') + ' | Latency: ' + data.inference_latency_ms + 'ms';
         } else {
           alert('Error: ' + (data.detail || 'Prediction failed'));
@@ -253,6 +274,18 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 """
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("SiteSafe Vision FastAPI application starting up...")
+    predictor = get_predictor()
+    if predictor.is_loaded:
+        logger.info(f"Loaded champion model '{predictor.model_name}' successfully.")
+    else:
+        logger.warning("Production model weights not found on startup.")
+    yield
+    logger.info("SiteSafe Vision FastAPI application shutting down...")
+
+
 app = FastAPI(
     title="SiteSafe Vision API",
     description=(
@@ -263,6 +296,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS
@@ -276,16 +310,6 @@ app.add_middleware(
 
 # Custom Middleware
 app.add_middleware(RequestTrackingMiddleware)
-
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("SiteSafe Vision FastAPI application starting up...")
-    predictor = get_predictor()
-    if predictor.is_loaded:
-        logger.info(f"Loaded champion model '{predictor.model_name}' successfully.")
-    else:
-        logger.warning("Production model weights not found on startup.")
 
 
 @app.get("/", tags=["General"])
@@ -360,7 +384,11 @@ async def get_version():
     )
 
 
-def validate_and_open_image(file_bytes: bytes, filename: str, content_type: str) -> Image.Image:
+def validate_and_open_image(
+    file_bytes: bytes,
+    filename: str | None = None,
+    content_type: str | None = None,
+) -> Image.Image:
     if len(file_bytes) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -428,6 +456,47 @@ async def predict_single(
         request_id=req_id,
         probabilities=pred_res["probabilities"],
         inference_latency_ms=pred_res["inference_latency_ms"],
+    )
+
+
+@app.post("/predict/explain", response_model=ExplainablePredictionResponse, tags=["Inference"])
+async def predict_explain(
+    request: Request,
+    file: UploadFile = File(..., description="Worker crop image file (JPEG/PNG/WebP)"),
+):
+    req_id = getattr(request.state, "request_id", str(uuid.uuid4()))
+    predictor = get_predictor()
+
+    if not predictor.is_loaded:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Inference model is currently unavailable.",
+        )
+
+    file_bytes = await file.read()
+    image = validate_and_open_image(file_bytes, file.filename, file.content_type)
+
+    pred_res, overlay = predictor.predict_with_gradcam(image)
+    risk_level, rec = evaluate_risk_and_recommendation(
+        pred_res["prediction"],
+        pred_res["confidence"],
+    )
+
+    buf = io.BytesIO()
+    overlay.save(buf, format="PNG")
+    gradcam_b64 = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
+
+    return ExplainablePredictionResponse(
+        prediction=pred_res["prediction"],
+        confidence=pred_res["confidence"],
+        risk_level=risk_level,
+        recommendation=rec,
+        model_version=pred_res["model_version"],
+        request_id=req_id,
+        probabilities=pred_res["probabilities"],
+        inference_latency_ms=pred_res["inference_latency_ms"],
+        gradcam_base64=gradcam_b64,
+        explanation_type="Grad-CAM (Visual Saliency Map)",
     )
 
 

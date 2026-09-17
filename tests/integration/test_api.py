@@ -58,6 +58,20 @@ def test_api_predict_valid_image():
     assert "probabilities" in data
 
 
+def test_api_predict_explain():
+    img_bytes = generate_test_image(224, 224)
+    response = client.post(
+        "/predict/explain",
+        files={"file": ("sample_worker.jpg", img_bytes, "image/jpeg")},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["prediction"] in ["FULL_PPE", "PARTIAL_PPE", "NO_PPE"]
+    assert 0.0 <= data["confidence"] <= 1.0
+    assert "gradcam_base64" in data
+    assert "explanation_type" in data
+
+
 def test_api_predict_batch():
     img1 = generate_test_image(224, 224, color=(100, 120, 140))
     img2 = generate_test_image(224, 224, color=(150, 170, 190))

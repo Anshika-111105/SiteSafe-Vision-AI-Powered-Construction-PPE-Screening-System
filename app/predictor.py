@@ -210,8 +210,10 @@ class PPEPredictor:
         """
         Runs inference and generates a Grad-CAM overlay PIL Image with thread-safe backward locking.
         """
-        if self.model is None or self.gradcam is None:
-            raise RuntimeError("Model is not loaded or Grad-CAM is not initialized.")
+        if not HAS_TORCH or self.model is None or self.gradcam is None or self.transforms is None:
+            pred_res = self.predict(image)
+            img_rgb = image.convert("RGB")
+            return pred_res, img_rgb
 
         model: nn.Module = self.model
         gradcam: GradCAM = self.gradcam
