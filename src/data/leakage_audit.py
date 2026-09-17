@@ -74,8 +74,8 @@ def run_leakage_audit_and_split(
     n_val = int(np.round(n_groups * val_ratio))
 
     train_groups = set(unique_source_ids[:n_train])
-    val_groups = set(unique_source_ids[n_train : n_train + n_val])
-    test_groups = set(unique_source_ids[n_train + n_val :])
+    val_groups = set(unique_source_ids[n_train:n_train + n_val])
+    test_groups = set(unique_source_ids[n_train + n_val:])
 
     # Assign split to every individual sample
     split_manifest_rows = []

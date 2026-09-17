@@ -1,0 +1,17 @@
+# Vercel Ignore Rules
+.git
+.github
+.dvc
+.pytest_cache
+.ruff_cache
+.vscode
+tests/
+notebooks/
+docs/
+data/
+reports/
+scripts/
+artifacts/models/best_resnet50.pt
+*.ipynb
+*.pyc
+__pycache__/
